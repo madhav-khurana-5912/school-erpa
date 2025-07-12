@@ -3,7 +3,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { onAuthStateChanged, signOut, User, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { onAuthStateChanged, signOut, User, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithRedirect } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 
 interface AuthContextType {
@@ -11,6 +11,7 @@ interface AuthContextType {
   loading: boolean;
   signInWithEmail: (email: string, pass: string) => Promise<void>;
   signUpWithEmail: (email: string, pass: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -36,8 +37,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   useEffect(() => {
-    // This effect handles redirection based on user state and loading status.
-    // It's separate to avoid re-running the auth subscription.
     if (!loading && user && pathname === '/login') {
         router.push('/');
     }
@@ -64,6 +63,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw error;
     }
   }
+  
+  const signInWithGoogle = async () => {
+    if (!auth) throw new Error("Firebase not initialized.");
+    setLoading(true);
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithRedirect(auth, provider);
+    } catch (error) {
+      console.error("Error during Google sign-in redirect", error);
+      setLoading(false);
+    }
+  };
 
   const logout = async () => {
     if (!auth) {
@@ -83,7 +94,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const value = { user, loading, signInWithEmail, signUpWithEmail, logout };
+  const value = { user, loading, signInWithEmail, signUpWithEmail, logout, signInWithGoogle };
   
   // This handles the case where firebase is not configured.
   // The login page will show an error.
