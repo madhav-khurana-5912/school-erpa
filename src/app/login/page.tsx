@@ -16,7 +16,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle, Loader2 } from 'lucide-react';
 
 const formSchema = z.object({
-  email: z.string().min(1, { message: "Please enter a valid PSID." }),
+  psid: z.string().min(1, { message: "Please enter a valid PSID." }),
   password: z.string().min(6, { message: "Password must be at least 6 characters." }),
 });
 
@@ -31,7 +31,7 @@ function LoginPageContent() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "",
+      psid: "",
       password: "",
     },
   });
@@ -48,7 +48,7 @@ function LoginPageContent() {
       // Firebase auth still requires an email format for user management.
       // We can append a dummy domain to the PSID.
       // IMPORTANT: This assumes PSIDs are unique and can serve as usernames.
-      const email = `${values.email}@example.com`;
+      const email = `${values.psid}@example.com`;
 
       if (isSignUp) {
         await signUpWithEmail(email, values.password);
@@ -94,7 +94,7 @@ function LoginPageContent() {
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                         <FormField
                             control={form.control}
-                            name="email"
+                            name="psid"
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>PSID</FormLabel>

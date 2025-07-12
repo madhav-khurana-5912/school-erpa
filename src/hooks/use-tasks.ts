@@ -1,4 +1,3 @@
-
 // src/hooks/use-tasks.ts
 "use client";
 
@@ -22,16 +21,16 @@ import type { Task } from "@/types";
 // Keep a local cache of tasks to avoid re-fetching on component re-renders.
 // This is a simple in-memory cache.
 let cachedTasks: Task[] = [];
-let cacheUserId: string | null = null;
+let cachePsid: string | null = null;
 let lastFetchTime: number = 0;
 const CACHE_DURATION = 1000 * 5; // 5 seconds
 
 // Export the fetch function to be used outside the hook for pre-fetching.
-export const fetchTasks = async (userId: string, force = false): Promise<Task[]> => {
+export const fetchTasks = async (psid: string, force = false): Promise<Task[]> => {
   const now = Date.now();
   if (
     !force &&
-    cacheUserId === userId &&
+    cachePsid === psid &&
     cachedTasks.length > 0 &&
     now - lastFetchTime < CACHE_DURATION
   ) {
@@ -46,7 +45,7 @@ export const fetchTasks = async (userId: string, force = false): Promise<Task[]>
   try {
     const q = query(
       collection(db, "tasks"),
-      where("userId", "==", userId),
+      where("psid", "==", psid),
       orderBy("date", "asc")
     );
     const querySnapshot = await getDocs(q);
@@ -61,7 +60,7 @@ export const fetchTasks = async (userId: string, force = false): Promise<Task[]>
     
     // Update cache
     cachedTasks = userTasks;
-    cacheUserId = userId;
+    cachePsid = psid;
     lastFetchTime = now;
     
     return userTasks;
@@ -73,12 +72,12 @@ export const fetchTasks = async (userId: string, force = false): Promise<Task[]>
 
 
 export function useTasks() {
-  const { user } = useAuth();
+  const { psid } = useAuth();
   const [tasks, setTasks] = useState<Task[]>(cachedTasks);
   const [isLoaded, setIsLoaded] = useState(cachedTasks.length > 0);
 
   const getTasks = useCallback(async () => {
-    if (!user || !db) {
+    if (!psid || !db) {
         setTasks([]);
         cachedTasks = [];
         setIsLoaded(true);
@@ -86,89 +85,89 @@ export function useTasks() {
     };
 
     setIsLoaded(false);
-    const userTasks = await fetchTasks(user.uid);
+    const userTasks = await fetchTasks(psid);
     setTasks(userTasks);
     setIsLoaded(true);
-  }, [user]);
+  }, [psid]);
 
   useEffect(() => {
     // If the cache is for a different user, or empty, fetch.
-    if (user && (user.uid !== cacheUserId || cachedTasks.length === 0)) {
+    if (psid && (psid !== cachePsid || cachedTasks.length === 0)) {
         getTasks();
     } else {
         // Otherwise, trust the cache but ensure component is updated.
         setTasks(cachedTasks);
         setIsLoaded(true);
     }
-  }, [user, getTasks]);
+  }, [psid, getTasks]);
 
   const addTask = useCallback(
-    async (taskData: Omit<Task, "id" | "completed" | "userId">) => {
-      if (!user || !db) return;
+    async (taskData: Omit<Task, "id" | "completed" | "psid">) => {
+      if (!psid || !db) return;
       try {
         await addDoc(collection(db, "tasks"), {
           ...taskData,
-          userId: user.uid,
+          psid: psid,
           completed: false,
           date: new Date(taskData.date),
         });
-        const updatedTasks = await fetchTasks(user.uid, true);
+        const updatedTasks = await fetchTasks(psid, true);
         setTasks(updatedTasks);
       } catch (error) {
         console.error("Error adding task: ", error);
       }
     },
-    [user]
+    [psid]
   );
 
   const updateTask = useCallback(
     async (updatedTask: Task) => {
-      if (!user || !db) return;
+      if (!psid || !db) return;
       const { id, ...taskData } = updatedTask;
       try {
         await updateDoc(doc(db, "tasks", id), {
             ...taskData,
             date: new Date(taskData.date)
         });
-        const updatedTasks = await fetchTasks(user.uid, true);
+        const updatedTasks = await fetchTasks(psid, true);
         setTasks(updatedTasks);
       } catch (error) {
         console.error("Error updating task: ", error);
       }
     },
-    [user]
+    [psid]
   );
 
   const deleteTask = useCallback(
     async (taskId: string) => {
-      if (!user || !db) return;
+      if (!psid || !db) return;
       try {
         await deleteDoc(doc(db, "tasks", taskId));
-        const updatedTasks = await fetchTasks(user.uid, true);
+        const updatedTasks = await fetchTasks(psid, true);
         setTasks(updatedTasks);
       } catch (error) {
         console.error("Error deleting task: ", error);
       }
     },
-    [user]
+    [psid]
   );
 
   const toggleTaskCompletion = useCallback(
     async (taskId: string) => {
-      if (!user || !db) return;
+      if (!psid || !db) return;
       const task = tasks.find((t) => t.id === taskId);
       if (!task) return;
       try {
         await updateDoc(doc(db, "tasks", taskId), {
           completed: !task.completed,
         });
-        const updatedTasks = await fetchTasks(user.uid, true);
+        const updatedTasks = await fetchTasks(psid, true);
         setTasks(updatedTasks);
       } catch (error) {
         console.error("Error toggling task completion: ", error);
       }
     },
-    [user, tasks]
+    [psid, tasks]
   );
 
   return { tasks, isLoaded, addTask, updateTask, deleteTask, toggleTaskCompletion };

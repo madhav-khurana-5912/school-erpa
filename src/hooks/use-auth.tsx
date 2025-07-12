@@ -1,8 +1,7 @@
-
 // src/hooks/use-auth.tsx
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { onAuthStateChanged, signOut, User, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
@@ -10,6 +9,7 @@ import { fetchTasks } from './use-tasks';
 
 interface AuthContextType {
   user: User | null;
+  psid: string | null;
   loading: boolean;
   signInWithEmail: (email: string, pass: string) => Promise<void>;
   signUpWithEmail: (email: string, pass: string) => Promise<void>;
@@ -20,6 +20,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [psid, setPsid] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
@@ -36,6 +37,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
         setUser(currentUser);
+        if (currentUser && currentUser.email) {
+          const userPsid = currentUser.email.split('@')[0];
+          setPsid(userPsid);
+        } else {
+          setPsid(null);
+        }
         setLoading(false);
         if (currentUser && pathname === '/login') {
           router.push('/');
@@ -52,8 +59,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(true);
     try {
         const userCredential = await signInWithEmailAndPassword(auth, email, pass);
-        if (userCredential.user) {
-          await fetchTasks(userCredential.user.uid, true); // Pre-fetch tasks
+        if (userCredential.user && userCredential.user.email) {
+          const userPsid = userCredential.user.email.split('@')[0];
+          await fetchTasks(userPsid, true); // Pre-fetch tasks
         }
     } catch (error) {
         setLoading(false);
@@ -81,6 +89,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       await signOut(auth);
       setUser(null); 
+      setPsid(null);
       router.push('/login');
     } catch (error) {
         console.error("Error signing out", error);
@@ -89,7 +98,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const value = { user, loading, signInWithEmail, signUpWithEmail, logout };
+  const value = { user, psid, loading, signInWithEmail, signUpWithEmail, logout };
 
   return (
     <AuthContext.Provider value={value}>
