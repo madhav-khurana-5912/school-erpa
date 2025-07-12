@@ -29,16 +29,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    // This effect handles redirection based on user state and loading status.
+    // It's separate to avoid re-running the auth subscription.
+    if (!loading) {
       if (user && pathname === '/login') {
         router.push('/');
       }
       if (!user && pathname !== '/login') {
         router.push('/login');
       }
-    });
+    }
+  }, [user, loading, pathname, router]);
 
-    return () => unsubscribe();
-  }, [router, pathname]);
 
   const signInWithGoogle = async () => {
     if (!auth) {
