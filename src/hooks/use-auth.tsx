@@ -39,10 +39,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // This effect handles redirection based on user state and loading status.
     // It's separate to avoid re-running the auth subscription.
-    if (!loading) {
-      if (user && pathname === '/login') {
+    if (!loading && user && pathname === '/login') {
         router.push('/');
-      }
     }
   }, [user, loading, router, pathname]);
 
@@ -55,8 +53,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(true);
     try {
       const provider = new GoogleAuthProvider();
+      // This will redirect the user to the Google sign-in page.
+      // After sign-in, they'll be redirected back to the app,
+      // and onAuthStateChanged will handle the rest.
       await signInWithRedirect(auth, provider);
-      // The user will be redirected, and onAuthStateChanged will handle the result.
     } catch (error) {
       console.error("Error signing in with Google", error);
       setLoading(false);
