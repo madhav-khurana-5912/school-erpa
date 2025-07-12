@@ -76,12 +76,14 @@ function LoginPageContent() {
   };
 
   const handleGoogleSignIn = async () => {
+    setError(null);
     setIsGoogleLoading(true);
     try {
       await signInWithGoogle();
-      // No need to set loading to false, as the page will redirect.
-    } catch (error) {
-      setError("Failed to sign in with Google. Please try again.");
+      // The page will redirect, so we don't need to set loading to false here
+      // unless an error occurs.
+    } catch (err: any) {
+      setError(`Google Sign-In failed: ${err.message}`);
       setIsGoogleLoading(false);
     }
   };
