@@ -19,7 +19,6 @@ import {
 import type { Task } from "@/types";
 
 // Keep a local cache of tasks to avoid re-fetching on component re-renders.
-// This is a simple in-memory cache.
 let cachedTasks: Task[] = [];
 let cachePsid: string | null = null;
 let lastFetchTime: number = 0;
@@ -39,6 +38,7 @@ export const fetchTasks = async (psid: string, force = false): Promise<Task[]> =
   
   if (!db) {
     console.error("Firestore not initialized.");
+    cachedTasks = [];
     return [];
   }
 
@@ -66,40 +66,44 @@ export const fetchTasks = async (psid: string, force = false): Promise<Task[]> =
     return userTasks;
   } catch (error) {
     console.error("Error fetching tasks:", error);
+    cachedTasks = [];
     return [];
   }
 };
 
 
 export function useTasks() {
-  const { psid } = useAuth();
-  const [tasks, setTasks] = useState<Task[]>(cachedTasks);
-  const [isLoaded, setIsLoaded] = useState(cachedTasks.length > 0);
+  const { psid, loading: authLoading } = useAuth();
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
 
-  const getTasks = useCallback(async () => {
-    if (!psid || !db) {
+  const getTasks = useCallback(async (currentPsid: string) => {
+    if (!db) {
         setTasks([]);
-        cachedTasks = [];
         setIsLoaded(true);
         return;
     };
-
     setIsLoaded(false);
-    const userTasks = await fetchTasks(psid);
+    const userTasks = await fetchTasks(currentPsid, true); // Force fetch for reliability
     setTasks(userTasks);
     setIsLoaded(true);
-  }, [psid]);
+  }, []);
 
   useEffect(() => {
-    // If the cache is for a different user, or empty, fetch.
-    if (psid && (psid !== cachePsid || cachedTasks.length === 0)) {
-        getTasks();
-    } else {
-        // Otherwise, trust the cache but ensure component is updated.
-        setTasks(cachedTasks);
+    // Only proceed if auth has finished loading
+    if (!authLoading) {
+      if (psid) {
+        // If there's a psid, fetch their tasks
+        getTasks(psid);
+      } else {
+        // If there is no psid (user logged out), clear tasks and set as loaded
+        setTasks([]);
+        cachedTasks = [];
+        cachePsid = null;
         setIsLoaded(true);
+      }
     }
-  }, [psid, getTasks]);
+  }, [psid, authLoading, getTasks]);
 
   const addTask = useCallback(
     async (taskData: Omit<Task, "id" | "completed" | "psid">) => {
@@ -111,13 +115,12 @@ export function useTasks() {
           completed: false,
           date: new Date(taskData.date),
         });
-        const updatedTasks = await fetchTasks(psid, true);
-        setTasks(updatedTasks);
+        await getTasks(psid); // Re-fetch after adding
       } catch (error) {
         console.error("Error adding task: ", error);
       }
     },
-    [psid]
+    [psid, getTasks]
   );
 
   const updateTask = useCallback(
@@ -129,13 +132,12 @@ export function useTasks() {
             ...taskData,
             date: new Date(taskData.date)
         });
-        const updatedTasks = await fetchTasks(psid, true);
-        setTasks(updatedTasks);
+        await getTasks(psid); // Re-fetch after updating
       } catch (error) {
         console.error("Error updating task: ", error);
       }
     },
-    [psid]
+    [psid, getTasks]
   );
 
   const deleteTask = useCallback(
@@ -143,31 +145,31 @@ export function useTasks() {
       if (!psid || !db) return;
       try {
         await deleteDoc(doc(db, "tasks", taskId));
-        const updatedTasks = await fetchTasks(psid, true);
-        setTasks(updatedTasks);
+        await getTasks(psid); // Re-fetch after deleting
       } catch (error) {
         console.error("Error deleting task: ", error);
       }
     },
-    [psid]
+    [psid, getTasks]
   );
 
   const toggleTaskCompletion = useCallback(
     async (taskId: string) => {
       if (!psid || !db) return;
-      const task = tasks.find((t) => t.id === taskId);
-      if (!task) return;
+      // We need to find the task in the current state to know its completed status
+      const taskToToggle = tasks.find((t) => t.id === taskId);
+      if (!taskToToggle) return;
+
       try {
         await updateDoc(doc(db, "tasks", taskId), {
-          completed: !task.completed,
+          completed: !taskToToggle.completed,
         });
-        const updatedTasks = await fetchTasks(psid, true);
-        setTasks(updatedTasks);
+        await getTasks(psid); // Re-fetch after toggling
       } catch (error) {
         console.error("Error toggling task completion: ", error);
       }
     },
-    [psid, tasks]
+    [psid, getTasks, tasks]
   );
 
   return { tasks, isLoaded, addTask, updateTask, deleteTask, toggleTaskCompletion };

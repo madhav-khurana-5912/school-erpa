@@ -5,14 +5,13 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { onAuthStateChanged, signOut, User, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import { fetchTasks } from './use-tasks';
 
 interface AuthContextType {
   user: User | null;
   psid: string | null;
   loading: boolean;
-  signInWithEmail: (email: string, pass: string) => Promise<void>;
-  signUpWithEmail: (email: string, pass: string) => Promise<void>;
+  signInWithEmail: (psid: string, pass: string) => Promise<void>;
+  signUpWithEmail: (psid: string, pass: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -54,23 +53,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [pathname, router]);
 
 
-  const signInWithEmail = async (email: string, pass: string) => {
+  const signInWithEmail = async (psid: string, pass: string) => {
     if (!auth) throw new Error("Firebase not initialized.");
+    const email = `${psid}@example.com`;
     setLoading(true);
     try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, pass);
-        if (userCredential.user && userCredential.user.email) {
-          const userPsid = userCredential.user.email.split('@')[0];
-          await fetchTasks(userPsid, true); // Pre-fetch tasks
-        }
+        await signInWithEmailAndPassword(auth, email, pass);
     } catch (error) {
         setLoading(false);
         throw error;
     }
   }
 
-  const signUpWithEmail = async (email: string, pass: string) => {
+  const signUpWithEmail = async (psid: string, pass: string) => {
     if (!auth) throw new Error("Firebase not initialized.");
+    const email = `${psid}@example.com`;
     setLoading(true);
     try {
         await createUserWithEmailAndPassword(auth, email, pass);
@@ -88,8 +85,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(true);
     try {
       await signOut(auth);
+      // Explicitly clear user and psid state
       setUser(null); 
       setPsid(null);
+      // After signing out, redirect to login page
       router.push('/login');
     } catch (error) {
         console.error("Error signing out", error);

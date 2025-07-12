@@ -45,15 +45,10 @@ function LoginPageContent() {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setError(null);
     try {
-      // Firebase auth still requires an email format for user management.
-      // We can append a dummy domain to the PSID.
-      // IMPORTANT: This assumes PSIDs are unique and can serve as usernames.
-      const email = `${values.psid}@example.com`;
-
       if (isSignUp) {
-        await signUpWithEmail(email, values.password);
+        await signUpWithEmail(values.psid, values.password);
       } else {
-        await signInWithEmail(email, values.password);
+        await signInWithEmail(values.psid, values.password);
       }
     } catch (err: any) {
         if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
@@ -63,7 +58,7 @@ function LoginPageContent() {
         } else if (err.code === 'auth/email-already-in-use') {
             setError("This PSID is already in use. Please sign in.");
         } else if (err.code === 'auth/invalid-email') {
-            setError("Invalid PSID format. Please try again.");
+            setError("Invalid PSID format. The PSID is used to create a unique identifier.");
         }
         else {
             setError(`An unexpected error occurred: ${err.message}`);
