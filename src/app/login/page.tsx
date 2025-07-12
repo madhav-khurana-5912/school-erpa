@@ -6,10 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth, AuthProvider } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
+import { auth } from '@/lib/firebase';
 
 function LoginPageContent() {
   const { user, signInWithGoogle, loading } = useAuth();
   const router = useRouter();
+  const isFirebaseConfigured = !!auth;
 
   React.useEffect(() => {
     if (user) {
@@ -33,11 +35,16 @@ function LoginPageContent() {
           <CardTitle className="text-2xl">Welcome to myAakash App</CardTitle>
           <CardDescription>Sign in to continue to your study planner</CardDescription>
         </CardHeader>
-        <CardContent>
-          <Button onClick={signInWithGoogle} disabled={loading} className="w-full">
+        <CardContent className="space-y-2">
+          <Button onClick={signInWithGoogle} disabled={loading || !isFirebaseConfigured} className="w-full">
             <GoogleIcon className="mr-2" />
             {loading ? 'Signing In...' : 'Sign in with Google'}
           </Button>
+          {!isFirebaseConfigured && (
+            <p className="text-xs text-center text-destructive">
+                Firebase is not configured. Please add your credentials to the .env file.
+            </p>
+          )}
         </CardContent>
       </Card>
     </div>
