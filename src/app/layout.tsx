@@ -10,7 +10,7 @@ import { SidebarNav } from '@/components/SidebarNav';
 import { BottomNavBar } from '@/components/BottomNavBar';
 
 export const metadata: Metadata = {
-  title: 'StudyFlow',
+  title: 'myAakash App',
   description: 'A functional study planner app',
 };
 
