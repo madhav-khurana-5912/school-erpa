@@ -27,7 +27,7 @@ import type { Task, SuggestedTask } from "@/types";
 import { Textarea } from "./ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { cn } from "@/lib/utils";
-import { format, parse, setHours, setMinutes } from "date-fns";
+import { format, setHours, setMinutes } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { Calendar } from "./ui/calendar";
 

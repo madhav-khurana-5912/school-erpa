@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useState, useMemo } from "react";
+import dynamic from 'next/dynamic';
 import { useTasks } from "@/hooks/use-tasks";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
@@ -19,11 +20,16 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
-import { TaskDialog } from "@/components/TaskDialog";
 import { Plus, Trash2, Pencil, Calendar as CalendarIcon, Clock, StickyNote } from "lucide-react";
 import type { Task } from "@/types";
 import { format, isToday, isFuture, parseISO } from 'date-fns';
 import { Badge } from "./ui/badge";
+import { cn } from "@/lib/utils";
+
+const TaskDialog = dynamic(() => import('@/components/TaskDialog').then(mod => mod.TaskDialog), {
+    ssr: false,
+});
+
 
 export function DashboardClient() {
   const { tasks, isLoaded, toggleTaskCompletion, deleteTask } = useTasks();
@@ -32,7 +38,7 @@ export function DashboardClient() {
   const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(new Date());
 
   const upcomingTasks = useMemo(
-    () => tasks.filter((task) => !task.completed && isFuture(parseISO(task.date)) || isToday(parseISO(task.date))),
+    () => tasks.filter((task) => !task.completed && (isFuture(parseISO(task.date)) || isToday(parseISO(task.date)))),
     [tasks]
   );
 
@@ -156,11 +162,13 @@ export function DashboardClient() {
           </CardContent>
         </Card>
       </div>
-      <TaskDialog 
-        isOpen={isDialogOpen} 
-        setIsOpen={setIsDialogOpen}
-        task={editingTask}
-      />
+      {isDialogOpen && (
+        <TaskDialog 
+          isOpen={isDialogOpen} 
+          setIsOpen={setIsDialogOpen}
+          task={editingTask}
+        />
+      )}
     </>
   );
 }

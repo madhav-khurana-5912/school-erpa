@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Roboto } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import {
@@ -10,9 +11,45 @@ import { SidebarNav } from '@/components/SidebarNav';
 import { BottomNavBar } from '@/components/BottomNavBar';
 import { AuthProvider } from '@/hooks/use-auth';
 
+const roboto = Roboto({
+  subsets: ['latin'],
+  weight: ['400', '500', '700'],
+  variable: '--font-roboto',
+});
+
 export const metadata: Metadata = {
-  title: 'myAakash App',
-  description: 'A functional study planner app',
+  title: {
+    default: 'myAakash App - Your Personal Study Planner',
+    template: '%s | myAakash App',
+  },
+  description: 'A functional and intelligent study planner app that helps you organize your study schedule, analyze your syllabus with AI, and stay on track with your academic goals.',
+  metadataBase: new URL('https://myaakash-app.com'), // Replace with your actual domain
+  openGraph: {
+    title: 'myAakash App - Your Personal Study Planner',
+    description: 'Organize your study schedule and analyze your syllabus with AI.',
+    url: 'https://myaakash-app.com', // Replace with your actual domain
+    siteName: 'myAakash App',
+    images: [
+      {
+        url: '/og-image.png', // Replace with a path to your Open Graph image
+        width: 1200,
+        height: 630,
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 };
 
 export default function RootLayout({
@@ -22,15 +59,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-      <body className="font-body antialiased">
+      <head />
+      <body className={`${roboto.variable} font-body antialiased`}>
         <AuthProvider>
           <SidebarProvider>
               <Sidebar>
