@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -104,14 +105,6 @@ export function DashboardClient() {
     </div>
   );
 
-  if (!isLoaded) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
   return (
     <>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -127,13 +120,17 @@ export function DashboardClient() {
             </Button>
           </CardHeader>
           <CardContent className="space-y-2">
-            {upcomingTasks.length > 0 ? (
+            {!isLoaded ? (
+                <div className="flex items-center justify-center h-48">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+            ) : upcomingTasks.length > 0 ? (
                 upcomingTasks.map(task => <TaskItem key={task.id} task={task} />)
             ) : (
                 <p className="text-sm text-muted-foreground text-center py-8">No upcoming tasks. Enjoy your free time!</p>
             )}
             
-            {completedTasks.length > 0 && (
+            {isLoaded && completedTasks.length > 0 && (
                  <Accordion type="single" collapsible className="w-full">
                     <AccordionItem value="completed-tasks">
                         <AccordionTrigger>Completed Tasks ({completedTasks.length})</AccordionTrigger>

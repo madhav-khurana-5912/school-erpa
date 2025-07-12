@@ -1,3 +1,4 @@
+
 // src/hooks/use-auth.tsx
 "use client";
 
@@ -5,6 +6,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { useRouter, usePathname } from 'next/navigation';
 import { onAuthStateChanged, signOut, User, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithRedirect, getRedirectResult } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
+import { fetchTasks } from './use-tasks';
 
 interface AuthContextType {
   user: User | null;
@@ -24,54 +26,51 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const pathname = usePathname();
 
   useEffect(() => {
-    // This effect should only run once on mount to set up the listener
-    // and handle the initial redirect result.
     if (!auth) {
+      console.error("Firebase not initialized. Cannot set up auth listeners.");
       setLoading(false);
-      // If firebase isn't configured, we shouldn't be on any page but login
       if (pathname !== '/login') {
         router.push('/login');
       }
       return;
     }
 
-    // This handles the result from a redirect sign-in. It's crucial to call
-    // this on page load to see if we're coming back from a redirect.
-    getRedirectResult(auth)
-      .then((result) => {
-        if (result) {
-          // User has been successfully signed in via redirect.
+    const processRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result && result.user) {
           setUser(result.user);
+          await fetchTasks(result.user.uid, true); // Pre-fetch tasks
           router.push('/');
         }
-      })
-      .catch((error) => {
-        // Handle errors here, such as account-exists-with-different-credential
+      } catch (error) {
         console.error("Error getting redirect result:", error);
-      })
-      .finally(() => {
-        // The onAuthStateChanged listener will handle setting the user
-        // for all other cases (e.g., page refresh, direct visit).
-        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-          setUser(currentUser);
-          setLoading(false);
-          if (currentUser && pathname === '/login') {
-            router.push('/');
-          }
-        });
-        
-        // Cleanup subscription on unmount
-        return () => unsubscribe();
+      }
+    };
+    
+    processRedirectResult().finally(() => {
+      const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+        setUser(currentUser);
+        setLoading(false);
+        if (currentUser && pathname === '/login') {
+          router.push('/');
+        }
       });
-      
-  }, []); // Empty dependency array ensures this runs only once.
+
+      return () => unsubscribe();
+    });
+    
+  }, [pathname, router]);
 
 
   const signInWithEmail = async (email: string, pass: string) => {
     if (!auth) throw new Error("Firebase not initialized.");
     setLoading(true);
     try {
-        await signInWithEmailAndPassword(auth, email, pass);
+        const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+        if (userCredential.user) {
+          await fetchTasks(userCredential.user.uid, true); // Pre-fetch tasks
+        }
     } catch (error) {
         setLoading(false);
         throw error;
@@ -95,7 +94,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     setLoading(true);
     const provider = new GoogleAuthProvider();
-    // This will navigate the user away to Google's sign-in page.
     await signInWithRedirect(auth, provider);
   };
 

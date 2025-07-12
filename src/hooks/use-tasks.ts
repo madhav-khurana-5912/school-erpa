@@ -1,3 +1,4 @@
+
 // src/hooks/use-tasks.ts
 "use client";
 
@@ -18,45 +19,88 @@ import {
 } from "firebase/firestore";
 import type { Task } from "@/types";
 
+// Keep a local cache of tasks to avoid re-fetching on component re-renders.
+// This is a simple in-memory cache.
+let cachedTasks: Task[] = [];
+let cacheUserId: string | null = null;
+let lastFetchTime: number = 0;
+const CACHE_DURATION = 1000 * 5; // 5 seconds
+
+// Export the fetch function to be used outside the hook for pre-fetching.
+export const fetchTasks = async (userId: string, force = false): Promise<Task[]> => {
+  const now = Date.now();
+  if (
+    !force &&
+    cacheUserId === userId &&
+    cachedTasks.length > 0 &&
+    now - lastFetchTime < CACHE_DURATION
+  ) {
+    return cachedTasks;
+  }
+  
+  if (!db) {
+    console.error("Firestore not initialized.");
+    return [];
+  }
+
+  try {
+    const q = query(
+      collection(db, "tasks"),
+      where("userId", "==", userId),
+      orderBy("date", "asc")
+    );
+    const querySnapshot = await getDocs(q);
+    const userTasks = querySnapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        date: (data.date as Timestamp).toDate().toISOString(),
+      } as Task;
+    });
+    
+    // Update cache
+    cachedTasks = userTasks;
+    cacheUserId = userId;
+    lastFetchTime = now;
+    
+    return userTasks;
+  } catch (error) {
+    console.error("Error fetching tasks:", error);
+    return [];
+  }
+};
+
+
 export function useTasks() {
   const { user } = useAuth();
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [tasks, setTasks] = useState<Task[]>(cachedTasks);
+  const [isLoaded, setIsLoaded] = useState(cachedTasks.length > 0);
 
-  const fetchTasks = useCallback(async () => {
+  const getTasks = useCallback(async () => {
     if (!user || !db) {
         setTasks([]);
+        cachedTasks = [];
         setIsLoaded(true);
         return;
     };
 
     setIsLoaded(false);
-    try {
-      const q = query(
-        collection(db, "tasks"),
-        where("userId", "==", user.uid),
-        orderBy("date", "asc")
-      );
-      const querySnapshot = await getDocs(q);
-      const userTasks = querySnapshot.docs.map((doc) => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          ...data,
-          date: (data.date as Timestamp).toDate().toISOString(),
-        } as Task;
-      });
-      setTasks(userTasks);
-    } catch (error) {
-      console.error("Error fetching tasks:", error);
-    } finally {
-      setIsLoaded(true);
-    }
+    const userTasks = await fetchTasks(user.uid);
+    setTasks(userTasks);
+    setIsLoaded(true);
   }, [user]);
 
   useEffect(() => {
-    fetchTasks();
-  }, [fetchTasks]);
+    // If the cache is for a different user, or empty, fetch.
+    if (user && (user.uid !== cacheUserId || cachedTasks.length === 0)) {
+        getTasks();
+    } else {
+        // Otherwise, trust the cache but ensure component is updated.
+        setTasks(cachedTasks);
+        setIsLoaded(true);
+    }
+  }, [user, getTasks]);
 
   const addTask = useCallback(
     async (taskData: Omit<Task, "id" | "completed" | "userId">) => {
@@ -68,12 +112,13 @@ export function useTasks() {
           completed: false,
           date: new Date(taskData.date),
         });
-        fetchTasks();
+        const updatedTasks = await fetchTasks(user.uid, true);
+        setTasks(updatedTasks);
       } catch (error) {
         console.error("Error adding task: ", error);
       }
     },
-    [user, fetchTasks]
+    [user]
   );
 
   const updateTask = useCallback(
@@ -85,12 +130,13 @@ export function useTasks() {
             ...taskData,
             date: new Date(taskData.date)
         });
-        fetchTasks();
+        const updatedTasks = await fetchTasks(user.uid, true);
+        setTasks(updatedTasks);
       } catch (error) {
         console.error("Error updating task: ", error);
       }
     },
-    [user, fetchTasks]
+    [user]
   );
 
   const deleteTask = useCallback(
@@ -98,12 +144,13 @@ export function useTasks() {
       if (!user || !db) return;
       try {
         await deleteDoc(doc(db, "tasks", taskId));
-        fetchTasks();
+        const updatedTasks = await fetchTasks(user.uid, true);
+        setTasks(updatedTasks);
       } catch (error) {
         console.error("Error deleting task: ", error);
       }
     },
-    [user, fetchTasks]
+    [user]
   );
 
   const toggleTaskCompletion = useCallback(
@@ -115,12 +162,13 @@ export function useTasks() {
         await updateDoc(doc(db, "tasks", taskId), {
           completed: !task.completed,
         });
-        fetchTasks();
+        const updatedTasks = await fetchTasks(user.uid, true);
+        setTasks(updatedTasks);
       } catch (error) {
         console.error("Error toggling task completion: ", error);
       }
     },
-    [user, tasks, fetchTasks]
+    [user, tasks]
   );
 
   return { tasks, isLoaded, addTask, updateTask, deleteTask, toggleTaskCompletion };
