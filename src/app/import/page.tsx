@@ -5,7 +5,7 @@ export default function ImportPage() {
   return (
     <div className="flex flex-col h-full">
       <Header title="Import Syllabus" />
-      <div className="flex-1 overflow-y-auto p-4 md:p-6">
+      <div className="p-4 md:p-6">
         <SyllabusImporter />
       </div>
     </div>

@@ -7,6 +7,7 @@ import {
   SidebarProvider,
 } from '@/components/ui/sidebar';
 import { SidebarNav } from '@/components/SidebarNav';
+import { BottomNavBar } from '@/components/BottomNavBar';
 
 export const metadata: Metadata = {
   title: 'StudyFlow',
@@ -33,7 +34,12 @@ export default function RootLayout({
             <Sidebar>
               <SidebarNav />
             </Sidebar>
-            <SidebarInset>{children}</SidebarInset>
+            <SidebarInset>
+              <div className="flex-1 overflow-y-auto pb-20 md:pb-0">
+                {children}
+              </div>
+            </SidebarInset>
+            <BottomNavBar />
         </SidebarProvider>
         <Toaster />
       </body>
