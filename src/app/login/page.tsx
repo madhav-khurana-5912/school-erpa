@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAuth, AuthProvider } from '@/hooks/use-auth';
+import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/firebase';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -47,15 +47,16 @@ function LoginPageContent() {
                 Firebase is not configured. Please add your credentials to the .env file and restart the server.
               </AlertDescription>
             </Alert>
-          ) : null}
-          <Button onClick={signInWithGoogle} disabled={loading || !isFirebaseConfigured} className="w-full">
-            {loading ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <GoogleIcon className="mr-2" />
-            )}
-            {loading ? 'Signing In...' : 'Sign in with Google'}
-          </Button>
+          ) : (
+            <Button onClick={signInWithGoogle} disabled={loading} className="w-full">
+                {loading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                <GoogleIcon className="mr-2" />
+                )}
+                {loading ? 'Redirecting...' : 'Sign in with Google'}
+            </Button>
+          )}
         </CardContent>
       </Card>
     </div>
@@ -64,8 +65,8 @@ function LoginPageContent() {
 
 export default function LoginPage() {
     return (
-        <AuthProvider>
-            <LoginPageContent />
-        </AuthProvider>
+      // The main AuthProvider is in the root layout, so we don't need another one here.
+      // But we need a wrapper to call useAuth.
+      <LoginPageContent />
     )
 }

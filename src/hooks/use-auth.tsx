@@ -3,7 +3,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut, User } from 'firebase/auth';
+import { onAuthStateChanged, signInWithRedirect, GoogleAuthProvider, signOut, User } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 
 interface AuthContextType {
@@ -29,6 +29,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       setLoading(false);
+      if (user && pathname === '/login') {
+        router.push('/');
+      }
       if (!user && pathname !== '/login') {
         router.push('/login');
       }
@@ -45,12 +48,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(true);
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-      router.push('/');
+      await signInWithRedirect(auth, provider);
+      // The user will be redirected, and onAuthStateChanged will handle the result.
     } catch (error) {
       console.error("Error signing in with Google", error);
-    } finally {
-        setLoading(false);
+      setLoading(false);
     }
   };
 
@@ -73,14 +75,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const value = { user, loading, signInWithGoogle, logout };
   
   if (!auth) {
+    // This case is handled in the login page now, but we'll keep the context-level check as a fallback.
     return (
         <AuthContext.Provider value={value}>
-            <div className="flex items-center justify-center h-screen bg-red-100 text-red-800">
-                <div className="text-center p-4 rounded-md border border-red-300 bg-red-50">
-                    <h1 className="text-xl font-bold">Firebase Configuration Error</h1>
-                    <p>Please make sure your Firebase environment variables are set correctly in the .env file.</p>
-                </div>
-            </div>
+            {children}
         </AuthContext.Provider>
     )
   }
