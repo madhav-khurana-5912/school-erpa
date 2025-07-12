@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useTransition } from "react";
@@ -28,6 +29,7 @@ export function SyllabusImporter() {
 
   const handleAnalyze = () => {
     startTransition(async () => {
+      setSuggestedTasks([]);
       const { data, error } = await getStudyTasksFromSyllabus(syllabusText);
       if (error) {
         toast({
@@ -137,7 +139,7 @@ export function SyllabusImporter() {
         <TaskDialog
           isOpen={isDialogOpen}
           setIsOpen={handleDialogClose}
-          initialData={{ topic: taskToSchedule.topic, duration: taskToSchedule.durationMinutes }}
+          initialData={taskToSchedule}
         />
       )}
     </div>

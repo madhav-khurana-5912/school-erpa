@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect } from "react";
@@ -27,7 +28,7 @@ import type { Task, SuggestedTask } from "@/types";
 import { Textarea } from "./ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { cn } from "@/lib/utils";
-import { format, setHours, setMinutes } from "date-fns";
+import { format, setHours, setMinutes, parseISO } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { Calendar } from "./ui/calendar";
 
@@ -67,15 +68,15 @@ export function TaskDialog({ isOpen, setIsOpen, task, initialData }: TaskDialogP
         const defaultValues = task
         ? {
             ...task,
-            date: new Date(task.date),
-            time: format(new Date(task.date), "HH:mm"),
+            date: parseISO(task.date),
+            time: format(parseISO(task.date), "HH:mm"),
           }
         : {
             subject: "",
             topic: initialData?.topic || "",
             date: new Date(),
             time: format(new Date(), "HH:mm"),
-            duration: initialData?.duration || 60,
+            duration: initialData?.durationMinutes || 60,
             notes: "",
           };
       form.reset(defaultValues);
