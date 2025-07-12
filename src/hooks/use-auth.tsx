@@ -23,41 +23,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const router = useRouter();
   const pathname = usePathname();
 
-  const handleUser = useCallback((user: User | null) => {
-    setLoading(false);
-    setUser(user);
-    if (user && pathname === '/login') {
-      router.push('/');
-    }
-  }, [pathname, router]);
-
   useEffect(() => {
+    // This effect should only run once on mount to set up the listener
+    // and handle the initial redirect result.
     if (!auth) {
       setLoading(false);
+      // If firebase isn't configured, we shouldn't be on any page but login
       if (pathname !== '/login') {
         router.push('/login');
       }
       return;
     }
 
-    // This handles the result from a redirect sign-in
+    // This handles the result from a redirect sign-in. It's crucial to call
+    // this on page load to see if we're coming back from a redirect.
     getRedirectResult(auth)
       .then((result) => {
         if (result) {
-          // User is signed in.
-          handleUser(result.user);
-        } else {
-          // No redirect result, check current auth state.
-          const unsubscribe = onAuthStateChanged(auth, handleUser);
-          return () => unsubscribe();
+          // User has been successfully signed in via redirect.
+          setUser(result.user);
+          router.push('/');
         }
       })
       .catch((error) => {
+        // Handle errors here, such as account-exists-with-different-credential
         console.error("Error getting redirect result:", error);
-        setLoading(false);
+      })
+      .finally(() => {
+        // The onAuthStateChanged listener will handle setting the user
+        // for all other cases (e.g., page refresh, direct visit).
+        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+          setUser(currentUser);
+          setLoading(false);
+          if (currentUser && pathname === '/login') {
+            router.push('/');
+          }
+        });
+        
+        // Cleanup subscription on unmount
+        return () => unsubscribe();
       });
       
-  }, [handleUser, pathname, router]);
+  }, []); // Empty dependency array ensures this runs only once.
 
 
   const signInWithEmail = async (email: string, pass: string) => {
@@ -88,6 +95,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     setLoading(true);
     const provider = new GoogleAuthProvider();
+    // This will navigate the user away to Google's sign-in page.
     await signInWithRedirect(auth, provider);
   };
 

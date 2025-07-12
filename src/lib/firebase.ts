@@ -13,15 +13,25 @@ const firebaseConfig: FirebaseOptions = {
 };
 
 // A check to ensure all firebase keys are present
-const allConfigKeysPresent = Object.values(firebaseConfig).every(value => value);
+const allConfigKeysPresent = Object.values(firebaseConfig).every(value => !!value);
 
-// Initialize Firebase
-const app = allConfigKeysPresent && !getApps().length ? initializeApp(firebaseConfig) : (getApps().length ? getApp() : null);
-const auth = app ? getAuth(app) : null;
-const db = app ? getFirestore(app) : null;
+let app;
+let auth;
+let db;
 
-if (!allConfigKeysPresent) {
-    console.error("Firebase config keys are missing. Please check your .env file.");
+if (allConfigKeysPresent) {
+  if (!getApps().length) {
+    app = initializeApp(firebaseConfig);
+  } else {
+    app = getApp();
+  }
+  auth = getAuth(app);
+  db = getFirestore(app);
+} else {
+  console.error("Firebase config keys are missing. Please check your .env file.");
+  app = null;
+  auth = null;
+  db = null;
 }
 
 export { app, auth, db };

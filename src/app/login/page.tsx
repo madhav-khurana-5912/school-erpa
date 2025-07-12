@@ -1,4 +1,3 @@
-
 // src/app/login/page.tsx
 "use client";
 
@@ -48,10 +47,10 @@ function LoginPageContent() {
   });
 
   React.useEffect(() => {
-    if (user) {
+    if (!loading && user) {
       router.push('/');
     }
-  }, [user, router]);
+  }, [user, loading, router]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setError(null);
@@ -84,7 +83,11 @@ function LoginPageContent() {
       // The page will redirect, so we don't need to set loading to false here
       // unless an error occurs.
     } catch (err: any) {
-      setError(`Google Sign-In failed: ${err.message}. Please check your Firebase Console settings.`);
+      if (err.code === 'auth/operation-not-allowed') {
+        setError("Google Sign-In is not enabled. Please enable it in your Firebase console's Authentication settings.");
+      } else {
+        setError(`Google Sign-In failed: ${err.message}. Please check your Firebase Console settings.`);
+      }
       setIsGoogleLoading(false);
     }
   };
