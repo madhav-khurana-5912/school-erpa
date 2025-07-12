@@ -3,13 +3,12 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { onAuthStateChanged, signInWithRedirect, GoogleAuthProvider, signOut, User, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { onAuthStateChanged, signOut, User, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  signInWithGoogle: () => Promise<void>;
   signInWithEmail: (email: string, pass: string) => Promise<void>;
   signUpWithEmail: (email: string, pass: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -43,25 +42,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         router.push('/');
     }
   }, [user, loading, router, pathname]);
-
-
-  const signInWithGoogle = async () => {
-    if (!auth) {
-        console.error("Firebase not initialized. Check your .env file.");
-        return;
-    }
-    setLoading(true);
-    try {
-      const provider = new GoogleAuthProvider();
-      // This will redirect the user to the Google sign-in page.
-      // After sign-in, they'll be redirected back to the app,
-      // and onAuthStateChanged will handle the rest.
-      await signInWithRedirect(auth, provider);
-    } catch (error) {
-      console.error("Error signing in with Google", error);
-      setLoading(false);
-    }
-  };
 
   const signInWithEmail = async (email: string, pass: string) => {
     if (!auth) throw new Error("Firebase not initialized.");
@@ -103,7 +83,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const value = { user, loading, signInWithGoogle, signInWithEmail, signUpWithEmail, logout };
+  const value = { user, loading, signInWithEmail, signUpWithEmail, logout };
   
   // This handles the case where firebase is not configured.
   // The login page will show an error.
