@@ -12,9 +12,9 @@ export function Header({ title, children }: HeaderProps) {
   const { isMobile } = useSidebar();
   
   return (
-    <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
+    <header className="sticky top-0 z-10 flex h-16 items-center justify-center gap-4 border-b bg-background px-4 md:px-6">
       <h1 className="text-xl font-semibold">{title}</h1>
-      <div className="ml-auto flex items-center gap-2">
+      <div className="absolute right-4 flex items-center gap-2">
         {children}
       </div>
     </header>
