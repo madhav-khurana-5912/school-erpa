@@ -4,7 +4,7 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { onAuthStateChanged, signOut, User, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithRedirect, getRedirectResult } from 'firebase/auth';
+import { onAuthStateChanged, signOut, User, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { fetchTasks } from './use-tasks';
 
@@ -13,7 +13,6 @@ interface AuthContextType {
   loading: boolean;
   signInWithEmail: (email: string, pass: string) => Promise<void>;
   signUpWithEmail: (email: string, pass: string) => Promise<void>;
-  signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -35,21 +34,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
 
-    const processRedirectResult = async () => {
-      try {
-        const result = await getRedirectResult(auth);
-        if (result && result.user) {
-          setUser(result.user);
-          await fetchTasks(result.user.uid, true); // Pre-fetch tasks
-          router.push('/');
-        }
-      } catch (error) {
-        console.error("Error getting redirect result:", error);
-      }
-    };
-    
-    processRedirectResult().finally(() => {
-      const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
         setUser(currentUser);
         setLoading(false);
         if (currentUser && pathname === '/login') {
@@ -58,7 +43,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       return () => unsubscribe();
-    });
     
   }, [pathname, router]);
 
@@ -87,15 +71,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw error;
     }
   }
-  
-  const signInWithGoogle = async () => {
-    if (!auth) {
-        throw new Error("Firebase is not initialized. Cannot sign in with Google.");
-    }
-    setLoading(true);
-    const provider = new GoogleAuthProvider();
-    await signInWithRedirect(auth, provider);
-  };
 
   const logout = async () => {
     if (!auth) {
@@ -114,7 +89,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const value = { user, loading, signInWithEmail, signUpWithEmail, logout, signInWithGoogle };
+  const value = { user, loading, signInWithEmail, signUpWithEmail, logout };
 
   return (
     <AuthContext.Provider value={value}>
