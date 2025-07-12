@@ -1,75 +1,126 @@
+// src/hooks/use-tasks.ts
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useAuth } from "./use-auth";
+import { db } from "@/lib/firebase";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  orderBy,
+  Timestamp,
+} from "firebase/firestore";
 import type { Task } from "@/types";
 
-const STORE_KEY = "studyflow.tasks";
-
 export function useTasks() {
+  const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  useEffect(() => {
-    try {
-      const storedTasks = localStorage.getItem(STORE_KEY);
-      if (storedTasks) {
-        setTasks(JSON.parse(storedTasks));
-      }
-    } catch (error) {
-      console.error("Failed to parse tasks from localStorage", error);
-    }
-    setIsLoaded(true);
-  }, []);
+  const fetchTasks = useCallback(async () => {
+    if (!user || !db) {
+        setTasks([]);
+        setIsLoaded(true);
+        return;
+    };
 
-  const updateStorage = (updatedTasks: Task[]) => {
-    // Sort tasks by date before storing
-    const sortedTasks = updatedTasks.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    setTasks(sortedTasks);
+    setIsLoaded(false);
     try {
-      localStorage.setItem(STORE_KEY, JSON.stringify(sortedTasks));
+      const q = query(
+        collection(db, "tasks"),
+        where("userId", "==", user.uid),
+        orderBy("date", "asc")
+      );
+      const querySnapshot = await getDocs(q);
+      const userTasks = querySnapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          date: (data.date as Timestamp).toDate().toISOString(),
+        } as Task;
+      });
+      setTasks(userTasks);
     } catch (error) {
-      console.error("Failed to save tasks to localStorage", error);
+      console.error("Error fetching tasks:", error);
+    } finally {
+      setIsLoaded(true);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    fetchTasks();
+  }, [fetchTasks]);
 
   const addTask = useCallback(
-    (taskData: Omit<Task, "id" | "completed">) => {
-      const newTask: Task = {
-        ...taskData,
-        id: Date.now().toString(),
-        completed: false,
-      };
-      updateStorage([...tasks, newTask]);
+    async (taskData: Omit<Task, "id" | "completed" | "userId">) => {
+      if (!user || !db) return;
+      try {
+        await addDoc(collection(db, "tasks"), {
+          ...taskData,
+          userId: user.uid,
+          completed: false,
+          date: new Date(taskData.date),
+        });
+        fetchTasks();
+      } catch (error) {
+        console.error("Error adding task: ", error);
+      }
     },
-    [tasks]
+    [user, fetchTasks]
   );
 
   const updateTask = useCallback(
-    (updatedTask: Task) => {
-      const newTasks = tasks.map((task) =>
-        task.id === updatedTask.id ? updatedTask : task
-      );
-      updateStorage(newTasks);
+    async (updatedTask: Task) => {
+      if (!user || !db) return;
+      const { id, ...taskData } = updatedTask;
+      try {
+        await updateDoc(doc(db, "tasks", id), {
+            ...taskData,
+            date: new Date(taskData.date)
+        });
+        fetchTasks();
+      } catch (error) {
+        console.error("Error updating task: ", error);
+      }
     },
-    [tasks]
+    [user, fetchTasks]
   );
 
   const deleteTask = useCallback(
-    (taskId: string) => {
-      const newTasks = tasks.filter((task) => task.id !== taskId);
-      updateStorage(newTasks);
+    async (taskId: string) => {
+      if (!user || !db) return;
+      try {
+        await deleteDoc(doc(db, "tasks", taskId));
+        fetchTasks();
+      } catch (error) {
+        console.error("Error deleting task: ", error);
+      }
     },
-    [tasks]
+    [user, fetchTasks]
   );
-  
+
   const toggleTaskCompletion = useCallback(
-    (taskId: string) => {
-        const newTasks = tasks.map((task) =>
-            task.id === taskId ? { ...task, completed: !task.completed } : task
-        );
-        updateStorage(newTasks);
+    async (taskId: string) => {
+      if (!user || !db) return;
+      const task = tasks.find((t) => t.id === taskId);
+      if (!task) return;
+      try {
+        await updateDoc(doc(db, "tasks", taskId), {
+          completed: !task.completed,
+        });
+        fetchTasks();
+      } catch (error) {
+        console.error("Error toggling task completion: ", error);
+      }
     },
-    [tasks]
+    [user, tasks, fetchTasks]
   );
 
   return { tasks, isLoaded, addTask, updateTask, deleteTask, toggleTaskCompletion };

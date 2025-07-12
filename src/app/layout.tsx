@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/sidebar';
 import { SidebarNav } from '@/components/SidebarNav';
 import { BottomNavBar } from '@/components/BottomNavBar';
+import { AuthProvider } from '@/hooks/use-auth';
 
 export const metadata: Metadata = {
   title: 'myAakash App',
@@ -30,17 +31,19 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <SidebarProvider>
-            <Sidebar>
-              <SidebarNav />
-            </Sidebar>
-            <SidebarInset>
-              <div className="flex-1 overflow-y-auto pb-20 md:pb-0">
-                {children}
-              </div>
-            </SidebarInset>
-            <BottomNavBar />
-        </SidebarProvider>
+        <AuthProvider>
+          <SidebarProvider>
+              <Sidebar>
+                <SidebarNav />
+              </Sidebar>
+              <SidebarInset>
+                <div className="flex-1 overflow-y-auto pb-20 md:pb-0">
+                  {children}
+                </div>
+              </SidebarInset>
+              <BottomNavBar />
+          </SidebarProvider>
+        </AuthProvider>
         <Toaster />
       </body>
     </html>

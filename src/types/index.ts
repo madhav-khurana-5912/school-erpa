@@ -1,5 +1,6 @@
 export interface Task {
   id: string;
+  userId: string;
   subject: string;
   topic: string;
   date: string; // ISO string for date and time
