@@ -16,7 +16,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle, Loader2 } from 'lucide-react';
 
 const formSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email." }),
+  email: z.string().min(1, { message: "Please enter a valid PSID." }),
   password: z.string().min(6, { message: "Password must be at least 6 characters." }),
 });
 
@@ -45,18 +45,25 @@ function LoginPageContent() {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setError(null);
     try {
+      // Firebase auth still requires an email format for user management.
+      // We can append a dummy domain to the PSID.
+      // IMPORTANT: This assumes PSIDs are unique and can serve as usernames.
+      const email = `${values.email}@example.com`;
+
       if (isSignUp) {
-        await signUpWithEmail(values.email, values.password);
+        await signUpWithEmail(email, values.password);
       } else {
-        await signInWithEmail(values.email, values.password);
+        await signInWithEmail(email, values.password);
       }
     } catch (err: any) {
-        if (err.code === 'auth/user-not-found') {
-            setError("No account found with this email. Please sign up.");
+        if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
+            setError("No account found with this PSID. Please sign up.");
         } else if (err.code === 'auth/wrong-password') {
             setError("Incorrect password. Please try again.");
         } else if (err.code === 'auth/email-already-in-use') {
-            setError("This email is already in use. Please sign in.");
+            setError("This PSID is already in use. Please sign in.");
+        } else if (err.code === 'auth/invalid-email') {
+            setError("Invalid PSID format. Please try again.");
         }
         else {
             setError(`An unexpected error occurred: ${err.message}`);
@@ -90,9 +97,9 @@ function LoginPageContent() {
                             name="email"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Email</FormLabel>
+                                    <FormLabel>PSID</FormLabel>
                                     <FormControl>
-                                        <Input type="email" placeholder="name@example.com" {...field} />
+                                        <Input type="text" placeholder="your-psid" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
