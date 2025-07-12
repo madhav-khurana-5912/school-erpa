@@ -20,7 +20,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Trash2, Pencil, Calendar as CalendarIcon, Clock, StickyNote } from "lucide-react";
+import { Plus, Trash2, Pencil, Calendar as CalendarIcon, Clock, StickyNote, Loader2 } from "lucide-react";
 import type { Task } from "@/types";
 import { format, isToday, isFuture, parseISO } from 'date-fns';
 import { Badge } from "./ui/badge";
@@ -105,7 +105,11 @@ export function DashboardClient() {
   );
 
   if (!isLoaded) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
   }
 
   return (

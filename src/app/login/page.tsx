@@ -8,7 +8,7 @@ import { useAuth, AuthProvider } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/firebase';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Loader2 } from 'lucide-react';
 
 
 function LoginPageContent() {
@@ -49,7 +49,11 @@ function LoginPageContent() {
             </Alert>
           ) : null}
           <Button onClick={signInWithGoogle} disabled={loading || !isFirebaseConfigured} className="w-full">
-            <GoogleIcon className="mr-2" />
+            {loading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <GoogleIcon className="mr-2" />
+            )}
             {loading ? 'Signing In...' : 'Sign in with Google'}
           </Button>
         </CardContent>

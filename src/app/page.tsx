@@ -7,6 +7,7 @@ import { DashboardClient } from "@/components/DashboardClient";
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
 
 export default function Home() {
   const { user, loading, logout } = useAuth();
@@ -21,7 +22,7 @@ export default function Home() {
   if (loading || !user) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="text-lg">Loading...</div>
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
