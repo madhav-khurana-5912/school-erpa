@@ -7,6 +7,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useAuth, AuthProvider } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/firebase';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertTriangle } from 'lucide-react';
+
 
 function LoginPageContent() {
   const { user, signInWithGoogle, loading } = useAuth();
@@ -35,16 +38,20 @@ function LoginPageContent() {
           <CardTitle className="text-2xl">Welcome to myAakash App</CardTitle>
           <CardDescription>Sign in to continue to your study planner</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-2">
+        <CardContent className="space-y-4">
+          {!isFirebaseConfigured ? (
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Configuration Error</AlertTitle>
+              <AlertDescription>
+                Firebase is not configured. Please add your credentials to the .env file and restart the server.
+              </AlertDescription>
+            </Alert>
+          ) : null}
           <Button onClick={signInWithGoogle} disabled={loading || !isFirebaseConfigured} className="w-full">
             <GoogleIcon className="mr-2" />
             {loading ? 'Signing In...' : 'Sign in with Google'}
           </Button>
-          {!isFirebaseConfigured && (
-            <p className="text-xs text-center text-destructive">
-                Firebase is not configured. Please add your credentials to the .env file.
-            </p>
-          )}
         </CardContent>
       </Card>
     </div>
