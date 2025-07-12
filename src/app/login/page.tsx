@@ -1,3 +1,4 @@
+
 // src/app/login/page.tsx
 "use client";
 
@@ -69,7 +70,7 @@ function LoginPageContent() {
             setError("This email is already in use. Please sign in.");
         }
         else {
-            setError("An unexpected error occurred. Please try again.");
+            setError(`An unexpected error occurred: ${err.message}`);
             console.error(err);
         }
     }
@@ -83,7 +84,7 @@ function LoginPageContent() {
       // The page will redirect, so we don't need to set loading to false here
       // unless an error occurs.
     } catch (err: any) {
-      setError(`Google Sign-In failed: ${err.message}`);
+      setError(`Google Sign-In failed: ${err.message}. Please check your Firebase Console settings.`);
       setIsGoogleLoading(false);
     }
   };
