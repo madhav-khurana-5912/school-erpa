@@ -29,26 +29,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
     }
     
-    // Check for redirect result on initial load
-    getRedirectResult(auth)
-      .then((result) => {
+    const processAuth = async () => {
+      try {
+        const result = await getRedirectResult(auth);
         if (result) {
-          // User signed in via redirect.
           setUser(result.user);
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("Error getting redirect result:", error);
-      })
-      .finally(() => {
-         // Subscribe to future auth state changes
+      } finally {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
             setUser(currentUser);
             setLoading(false);
         });
         return () => unsubscribe();
-      });
-
+      }
+    }
+    processAuth();
   }, []);
 
   useEffect(() => {
@@ -80,15 +77,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
   
   const signInWithGoogle = async () => {
-    if (!auth) throw new Error("Firebase not initialized.");
+    if (!auth) {
+        console.error("Firebase is not initialized. Cannot sign in with Google.");
+        // Optionally, show an error to the user
+        return;
+    }
     setLoading(true);
     const provider = new GoogleAuthProvider();
     try {
       await signInWithRedirect(auth, provider);
-      // The redirect will cause the page to unload, so no need to setLoading(false) here.
+      // The page will redirect, so no need to setLoading(false) here.
     } catch (error) {
       console.error("Error during Google sign-in redirect", error);
-      setLoading(false);
+      setLoading(false); // Only set loading to false if an error occurs before redirect.
     }
   };
 
@@ -100,7 +101,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(true);
     try {
       await signOut(auth);
-      // After sign out, clear user state and redirect to login
       setUser(null); 
       router.push('/login');
     } catch (error) {
@@ -112,13 +112,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const value = { user, loading, signInWithEmail, signUpWithEmail, logout, signInWithGoogle };
   
-  // This handles the case where firebase is not configured.
-  // The login page will show an error.
-  if (!auth) {
-    if (pathname !== '/login') {
-        router.push('/login');
-        return null; // Render nothing while redirecting
-    }
+  if (!auth && pathname !== '/login') {
+    router.push('/login');
+    return null;
   }
 
   return (

@@ -34,6 +34,8 @@ function LoginPageContent() {
   const [error, setError] = React.useState<string | null>(null);
   const { user, loading, signInWithEmail, signUpWithEmail, signInWithGoogle } = useAuth();
   const router = useRouter();
+  const [isGoogleLoading, setIsGoogleLoading] = React.useState(false);
+
   const isFirebaseConfigured = !!auth;
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -58,7 +60,6 @@ function LoginPageContent() {
       } else {
         await signInWithEmail(values.email, values.password);
       }
-      // Redirect is handled by the auth hook
     } catch (err: any) {
         if (err.code === 'auth/user-not-found') {
             setError("No account found with this email. Please sign up.");
@@ -71,6 +72,17 @@ function LoginPageContent() {
             setError("An unexpected error occurred. Please try again.");
             console.error(err);
         }
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setIsGoogleLoading(true);
+    try {
+      await signInWithGoogle();
+      // No need to set loading to false, as the page will redirect.
+    } catch (error) {
+      setError("Failed to sign in with Google. Please try again.");
+      setIsGoogleLoading(false);
     }
   };
 
@@ -127,7 +139,7 @@ function LoginPageContent() {
                             </Alert>
                         )}
                         <Button type="submit" disabled={loading} className="w-full">
-                            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            {loading && !isGoogleLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             {isSignUp ? 'Sign Up' : 'Sign In'}
                         </Button>
                     </form>
@@ -142,8 +154,8 @@ function LoginPageContent() {
                         </span>
                     </div>
                 </div>
-                <Button variant="outline" className="w-full" onClick={signInWithGoogle} disabled={loading}>
-                    {loading ? (
+                <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={loading || isGoogleLoading}>
+                    {isGoogleLoading ? (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : (
                         <GoogleIcon className="mr-2 h-4 w-4" />
@@ -170,8 +182,6 @@ function LoginPageContent() {
 
 export default function LoginPage() {
     return (
-      // The main AuthProvider is in the root layout, so we don't need another one here.
-      // But we need a wrapper to call useAuth.
       <LoginPageContent />
     )
 }
