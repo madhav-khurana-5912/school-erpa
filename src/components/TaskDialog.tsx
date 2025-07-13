@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useState, useTransition } from "react";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import {
@@ -24,14 +24,17 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useTasks } from "@/hooks/use-tasks";
+import { useSyllabus } from "@/hooks/use-syllabus";
+import { getTopicSuggestions } from "@/lib/actions";
 import type { Task, SuggestedTask } from "@/types";
 import { Textarea } from "./ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { cn } from "@/lib/utils";
 import { format, setHours, setMinutes, parseISO } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import { Calendar } from "./ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "./ui/command";
 
 const formSchema = z.object({
   subject: z.string().min(1, "Subject is required."),
@@ -52,6 +55,9 @@ type TaskDialogProps = {
 
 export function TaskDialog({ isOpen, setIsOpen, task, initialData }: TaskDialogProps) {
   const { addTask, updateTask } = useTasks();
+  const { syllabus, isLoaded: isSyllabusLoaded } = useSyllabus();
+  const [suggestedTopics, setSuggestedTopics] = useState<string[]>([]);
+  const [isSuggesting, startSuggesting] = useTransition();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -65,6 +71,8 @@ export function TaskDialog({ isOpen, setIsOpen, task, initialData }: TaskDialogP
       notes: "",
     },
   });
+  
+  const watchedSubject = useWatch({ control: form.control, name: "subject" });
 
   useEffect(() => {
     if (isOpen) {
@@ -85,8 +93,26 @@ export function TaskDialog({ isOpen, setIsOpen, task, initialData }: TaskDialogP
             notes: initialData?.notes || "",
           };
       form.reset(defaultValues);
+      setSuggestedTopics([]); // Reset suggestions on open
     }
   }, [isOpen, task, initialData, form]);
+
+  useEffect(() => {
+    if (watchedSubject && isSyllabusLoaded && syllabus && syllabus.topics.length > 0) {
+      startSuggesting(async () => {
+        const { data } = await getTopicSuggestions({
+          subject: watchedSubject,
+          syllabusTopics: syllabus.topics,
+        });
+        if (data) {
+          setSuggestedTopics(data.suggestedTopics);
+        }
+      });
+    } else {
+      setSuggestedTopics([]);
+    }
+  }, [watchedSubject, isSyllabusLoaded, syllabus]);
+
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     const [hours, minutes] = values.time.split(':').map(Number);
@@ -116,7 +142,7 @@ export function TaskDialog({ isOpen, setIsOpen, task, initialData }: TaskDialogP
           <DialogTitle>{task ? "Edit Task" : "Add New Task"}</DialogTitle>
           <DialogDescription>
             {task ? "Update the details of your study session." : "Plan a new study session to stay on track."}
-          </DialogDescription>
+          </Description>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -133,15 +159,61 @@ export function TaskDialog({ isOpen, setIsOpen, task, initialData }: TaskDialogP
                 </FormItem>
               )}
             />
-             <FormField
+            <FormField
               control={form.control}
               name="topic"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex flex-col">
                   <FormLabel>Topic</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g. Algebra" {...field} />
-                  </FormControl>
+                   <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          className={cn(
+                            "w-full justify-between",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value || "Select a topic or type your own"}
+                          {isSuggesting ? <Loader2 className="ml-2 h-4 w-4 animate-spin" /> : <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />}
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                      <Command>
+                        <CommandInput
+                          placeholder="Search or type topic..."
+                          onValueChange={(search) => {
+                             if (!suggestedTopics.includes(search)) {
+                                field.onChange(search);
+                             }
+                          }}
+                         />
+                        <CommandEmpty>No topic found.</CommandEmpty>
+                        <CommandGroup>
+                          {suggestedTopics.map((topic) => (
+                            <CommandItem
+                              value={topic}
+                              key={topic}
+                              onSelect={() => {
+                                form.setValue("topic", topic)
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  topic === field.value ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              {topic}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                   <FormMessage />
                 </FormItem>
               )}

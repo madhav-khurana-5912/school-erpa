@@ -24,3 +24,9 @@ export interface Test {
   endDate: string;   // ISO string
   syllabus?: string;
 }
+
+export interface Syllabus {
+  id: string;
+  psid: string;
+  topics: string[];
+}

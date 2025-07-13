@@ -3,6 +3,7 @@
 
 import { useState, useTransition, ChangeEvent } from "react";
 import { getStudyTasksFromSyllabus } from "@/lib/actions";
+import { useSyllabus } from "@/hooks/use-syllabus";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -15,9 +16,8 @@ import {
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import type { SuggestedTask } from "@/types";
-import { TaskDialog } from "./TaskDialog";
 import { Skeleton } from "./ui/skeleton";
-import { Wand2, Clock, Plus, Upload, FileText, Type } from "lucide-react";
+import { Wand2, Clock, Save, Upload, FileText, Type, ListChecks } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const fileToDataUri = (file: File): Promise<string> => {
@@ -34,9 +34,10 @@ export function SyllabusImporter() {
   const [syllabusFile, setSyllabusFile] = useState<File | null>(null);
   const [activeTab, setActiveTab] = useState("text");
   const [suggestedTasks, setSuggestedTasks] = useState<SuggestedTask[]>([]);
-  const [taskToSchedule, setTaskToSchedule] = useState<SuggestedTask | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isPending, startTransition] = useTransition();
+  const [isAnalyzing, startAnalyzing] = useTransition();
+  const [isSaving, startSaving] = useTransition();
+  const { setSyllabusTopics } = useSyllabus();
+
   const { toast } = useToast();
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -47,7 +48,7 @@ export function SyllabusImporter() {
   };
 
   const handleAnalyze = () => {
-    startTransition(async () => {
+    startAnalyzing(async () => {
       setSuggestedTasks([]);
       try {
         let result;
@@ -76,7 +77,7 @@ export function SyllabusImporter() {
           setSuggestedTasks(data.studyTasks);
           toast({
             title: "Syllabus Analyzed",
-            description: `We've generated ${data.studyTasks.length} study tasks for you.`,
+            description: `We've extracted ${data.studyTasks.length} topics. Review and save them.`,
           });
         }
       } catch (e) {
@@ -89,15 +90,25 @@ export function SyllabusImporter() {
     });
   };
 
-  const handleScheduleTask = (task: SuggestedTask) => {
-    setTaskToSchedule(task);
-    setIsDialogOpen(true);
+  const handleSaveSyllabus = () => {
+    startSaving(async () => {
+      try {
+        const topics = suggestedTasks.map(task => task.topic);
+        await setSyllabusTopics(topics);
+        toast({
+          title: "Success",
+          description: "Your syllabus topics have been saved.",
+        });
+        setSuggestedTasks([]);
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Could not save syllabus. Please try again.",
+        });
+      }
+    });
   };
-  
-  const handleDialogClose = () => {
-    setIsDialogOpen(false);
-    setTaskToSchedule(null);
-  }
 
   const canAnalyze = (activeTab === 'text' && !!syllabusText.trim()) || (activeTab === 'file' && !!syllabusFile);
 
@@ -138,8 +149,8 @@ export function SyllabusImporter() {
             </Tabs>
         </CardContent>
         <CardFooter>
-          <Button onClick={handleAnalyze} disabled={isPending || !canAnalyze}>
-            {isPending ? (
+          <Button onClick={handleAnalyze} disabled={isAnalyzing || !canAnalyze}>
+            {isAnalyzing ? (
               "Analyzing..."
             ) : (
                 <>
@@ -153,13 +164,13 @@ export function SyllabusImporter() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Suggested Tasks</CardTitle>
+          <CardTitle>Extracted Topics</CardTitle>
           <CardDescription>
-            Here are the tasks generated from your syllabus. Add them to your study plan.
+            Here are the topics generated from your syllabus. Save them to enable AI topic suggestions.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {isPending ? (
+          {isAnalyzing ? (
              <div className="space-y-4">
                 <Skeleton className="h-12 w-full" />
                 <Skeleton className="h-12 w-full" />
@@ -176,33 +187,25 @@ export function SyllabusImporter() {
                     <p className="font-medium">{task.topic}</p>
                     <p className="text-sm text-muted-foreground flex items-center gap-1"><Clock className="w-3 h-3"/> {task.durationMinutes} minutes</p>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleScheduleTask(task)}
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Schedule
-                  </Button>
                 </li>
               ))}
             </ul>
           ) : (
-            <div className="text-center text-muted-foreground py-10">
-              <p>No tasks suggested yet.</p>
+            <div className="text-center text-muted-foreground py-10 flex flex-col items-center justify-center">
+              <ListChecks className="h-12 w-12 text-muted-foreground/50 mb-4" />
+              <p>No topics extracted yet.</p>
               <p className="text-sm">Analyze a syllabus to get started.</p>
             </div>
           )}
         </CardContent>
+        {suggestedTasks.length > 0 && (
+          <CardFooter>
+            <Button onClick={handleSaveSyllabus} disabled={isSaving}>
+              {isSaving ? "Saving..." : <><Save className="mr-2 h-4 w-4" /> Save All to Syllabus</>}
+            </Button>
+          </CardFooter>
+        )}
       </Card>
-
-      {taskToSchedule && (
-        <TaskDialog
-          isOpen={isDialogOpen}
-          setIsOpen={handleDialogClose}
-          initialData={taskToSchedule}
-        />
-      )}
     </div>
   );
 }

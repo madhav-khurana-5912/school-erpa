@@ -72,8 +72,8 @@ export default function Home() {
       <div className="flex-1 overflow-y-auto p-4 md:p-6">
         <DashboardClient />
       </div>
-       <div className="block md:hidden">
-          <Button onClick={logout} variant="outline" size="sm" className="w-full m-4 max-w-xs mx-auto">Logout</Button>
+       <div className="block md:hidden m-4">
+          <Button onClick={logout} variant="outline" size="sm" className="w-full">Logout</Button>
        </div>
     </div>
   );
