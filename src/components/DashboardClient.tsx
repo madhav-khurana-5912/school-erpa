@@ -4,8 +4,8 @@
 import * as React from "react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, Clock, MapPin, CheckCircle2, ChevronRight, BookOpen, FlaskConical, Atom, BrainCircuit } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Calendar, Clock, MapPin, CheckCircle2, ChevronRight, BookOpen, FlaskConical, Atom, BrainCircuit, Wand2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -28,6 +28,27 @@ const AttendanceCard = () => (
           <p className="font-semibold">01:46 pm</p>
         </div>
       </CardContent>
+    </Card>
+);
+
+const SyllabusAnalyzerCard = () => (
+    <Card className="shadow-md bg-primary/10 border-primary/20">
+        <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2 text-lg">
+                <Wand2 className="text-primary"/>
+                AI Study Planner
+            </CardTitle>
+            <CardDescription>
+                Let our AI analyze your syllabus and create a personalized study plan for you.
+            </CardDescription>
+        </CardHeader>
+        <CardContent>
+            <Link href="/import">
+                <Button className="w-full">
+                    Analyze Syllabus
+                </Button>
+            </Link>
+        </CardContent>
     </Card>
 );
 
@@ -166,6 +187,7 @@ export function DashboardClient() {
   return (
     <div className="space-y-6">
       <AttendanceCard />
+      <SyllabusAnalyzerCard />
       <FeedbackBanner />
       <TestsSection />
       <UpcomingClasses />
