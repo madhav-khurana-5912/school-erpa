@@ -23,13 +23,9 @@ export function BottomNavBar() {
     return null;
   }
 
-  // Create placeholder pages for new nav items if they don't exist
-  // This is a simple example. In a real app, you would create actual pages.
-  const allRoutes = ["/", "/import", "/login", "/planner", "/test-scores", "/tests", "/more"];
-
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 w-full md:hidden">
-      <div className="flex h-16 items-center justify-around border-t bg-background/95 backdrop-blur-sm">
+      <div className="flex h-16 items-stretch justify-around border-t bg-background/95 backdrop-blur-sm">
         {menuItems.map((item) => {
           const isActive = pathname === item.href;
           return (
@@ -37,12 +33,15 @@ export function BottomNavBar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex h-full flex-col items-center justify-center gap-1 flex-1 px-2 py-2 text-xs font-medium transition-colors",
+                "flex flex-col items-center justify-center gap-1 flex-1 p-2 text-xs font-medium transition-colors duration-200 ease-in-out relative group",
                 isActive
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
+              {isActive && (
+                <span className="absolute top-0 h-0.5 w-1/2 rounded-b-full bg-primary transition-all duration-300"></span>
+              )}
               <item.icon className="h-5 w-5" />
               <span>{item.label}</span>
             </Link>
