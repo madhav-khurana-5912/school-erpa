@@ -10,27 +10,6 @@ import { Calendar, MapPin, ChevronRight, Wand2, Loader2, BookOpen } from "lucide
 import Link from "next/link";
 import type { Test } from "@/types";
 
-const SyllabusAnalyzerCard = () => (
-    <Card className="shadow-md bg-primary/10 border-primary/20">
-        <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 text-lg">
-                <Wand2 className="text-primary"/>
-                AI Study Planner
-            </CardTitle>
-            <CardDescription>
-                Let our AI analyze your syllabus and create a personalized study plan for you.
-            </CardDescription>
-        </CardHeader>
-        <CardContent>
-            <Link href="/import">
-                <Button className="w-full">
-                    Analyze Syllabus
-                </Button>
-            </Link>
-        </CardContent>
-    </Card>
-);
-
 const TestsSection = () => {
     const { tests, isLoaded } = useTests();
 
@@ -96,7 +75,6 @@ const TestsSection = () => {
 export function DashboardClient() {
   return (
     <div className="space-y-6">
-      <SyllabusAnalyzerCard />
       <TestsSection />
     </div>
   );
