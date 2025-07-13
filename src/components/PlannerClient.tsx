@@ -1,4 +1,3 @@
-
 // src/components/PlannerClient.tsx
 "use client";
 
@@ -110,11 +109,6 @@ export function PlannerClient() {
   return (
     <div className="p-4 md:p-6 space-y-6">
         <LearnToday onSubjectClick={handleAddNewTaskForSubject} />
-      <div className="flex justify-end">
-        <Button onClick={handleAddNewTask}>
-          <Plus className="mr-2 h-4 w-4" /> Add New Task
-        </Button>
-      </div>
 
       {!isLoaded ? (
         <div className="flex justify-center items-center py-10">
@@ -123,7 +117,7 @@ export function PlannerClient() {
       ) : tasks.length === 0 ? (
         <div className="text-center text-muted-foreground py-10 border-2 border-dashed rounded-lg">
           <p className="text-lg font-semibold">No tasks scheduled yet.</p>
-          <p>Click "Add New Task" to get started.</p>
+          <p>Click on a subject above to get started.</p>
         </div>
       ) : (
         <div className="space-y-6">
