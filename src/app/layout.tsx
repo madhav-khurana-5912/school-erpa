@@ -70,8 +70,8 @@ export default function RootLayout({
                 <div className="flex-1 overflow-y-auto pb-20 md:pb-0">
                   {children}
                 </div>
+                <BottomNavBar />
               </SidebarInset>
-              <BottomNavBar />
           </SidebarProvider>
         </AuthProvider>
         <Toaster />

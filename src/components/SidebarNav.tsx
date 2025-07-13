@@ -3,8 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard,
+  Home,
+  CalendarDays,
+  ClipboardCheck,
   FileText,
+  MoreHorizontal,
+  FileUp,
 } from "lucide-react";
 import {
   SidebarHeader,
@@ -16,16 +20,12 @@ import {
 import { cn } from "@/lib/utils";
 
 const menuItems = [
-  {
-    href: "/",
-    label: "Dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    href: "/import",
-    label: "Import Syllabus",
-    icon: FileText,
-  },
+  { href: "/", label: "Home", icon: Home },
+  { href: "/timetable", label: "Timetable", icon: CalendarDays },
+  { href: "/test-scores", label: "Test Scores", icon: ClipboardCheck },
+  { href: "/tests", label: "Tests", icon: FileText },
+  { href: "/more", label: "More", icon: MoreHorizontal },
+  { href: "/import", label: "Import Syllabus", icon: FileUp },
 ];
 
 export function SidebarNav() {

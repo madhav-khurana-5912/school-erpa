@@ -2,174 +2,174 @@
 "use client";
 
 import * as React from "react";
-import { useState, useMemo } from "react";
-import dynamic from 'next/dynamic';
-import { useTasks } from "@/hooks/use-tasks";
-import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Trash2, Pencil, Calendar as CalendarIcon, Clock, StickyNote, Loader2 } from "lucide-react";
-import type { Task } from "@/types";
-import { format, isToday, isFuture, parseISO } from 'date-fns';
-import { Badge } from "./ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Calendar, Clock, MapPin, CheckCircle2, ChevronRight, BookOpen, FlaskConical, Atom, BrainCircuit } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-const TaskDialog = dynamic(() => import('@/components/TaskDialog').then(mod => mod.TaskDialog), {
-    ssr: false,
-});
+
+const AttendanceCard = () => (
+    <Card className="shadow-md">
+      <CardContent className="p-4 flex items-center justify-between space-x-4">
+        <div className="flex flex-col items-center justify-center bg-blue-100 text-blue-800 rounded-lg p-2 px-4">
+          <span className="text-lg font-bold">{format(new Date(), "dd")}</span>
+          <span className="text-sm">{format(new Date(), "MMM")}</span>
+          <span className="text-xs text-muted-foreground">{format(new Date(), "E")}</span>
+        </div>
+        <div className="text-center">
+          <p className="text-sm text-muted-foreground">First Punch</p>
+          <p className="font-semibold">08:10 am</p>
+        </div>
+        <div className="text-center">
+          <p className="text-sm text-muted-foreground">Last Punch</p>
+          <p className="font-semibold">01:46 pm</p>
+        </div>
+      </CardContent>
+    </Card>
+);
+
+const FeedbackBanner = () => (
+    <div className="bg-green-100 border border-green-200 text-green-800 rounded-lg p-4 flex items-center justify-between">
+        <div className="flex items-start gap-3">
+            <CheckCircle2 className="h-6 w-6 text-green-600 mt-1" />
+            <div>
+                <h4 className="font-bold">Thank You for Your Feedback!</h4>
+                <p className="text-sm text-green-700">We appreciate your input. It helps us make meaningful improvements.</p>
+            </div>
+        </div>
+        <div className="hidden sm:block">
+            <Image 
+                src="https://placehold.co/120x80.png" 
+                alt="Feedback graphic"
+                data-ai-hint="feedback survey"
+                width={120} 
+                height={80}
+                className="rounded-lg"
+            />
+        </div>
+    </div>
+);
+
+const TestsSection = () => (
+    <div>
+        <div className="flex justify-between items-center mb-2">
+            <h3 className="text-lg font-bold">Tests</h3>
+            <Link href="#" className="text-sm text-blue-600 hover:underline flex items-center">
+                View all <ChevronRight className="h-4 w-4" />
+            </Link>
+        </div>
+        <Card className="shadow-md">
+            <CardContent className="p-4">
+                <div className="flex justify-between items-start">
+                    <h4 className="font-bold text-lg">Unit Test - UT-01</h4>
+                    <span className="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Upcoming</span>
+                </div>
+                <div className="text-muted-foreground text-sm space-y-2 mt-2">
+                    <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4" />
+                        <span>15 Jul'25 - 17 Jul'25</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <MapPin className="w-4 h-4" />
+                        <span>Online</span>
+                    </div>
+                </div>
+                <div className="mt-4">
+                    <Link href="#" className="text-sm font-semibold text-blue-600 hover:underline">
+                        Test Details
+                    </Link>
+                </div>
+            </CardContent>
+        </Card>
+    </div>
+);
+
+const UpcomingClasses = () => (
+    <div>
+        <h3 className="text-lg font-bold mb-2">Upcoming Classes</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card className="shadow-md bg-orange-50 border-orange-100">
+                <CardContent className="p-4">
+                    <div className="flex justify-between items-start">
+                        <h4 className="font-bold text-md">Social Science</h4>
+                        <div className="bg-orange-200 p-2 rounded-full">
+                           <BookOpen className="w-5 h-5 text-orange-700" />
+                        </div>
+                    </div>
+                    <div className="text-muted-foreground text-sm space-y-2 mt-4">
+                        <div className="flex items-center gap-2">
+                           <Calendar className="w-4 h-4" />
+                           <span>19 Jul 2025</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                           <Clock className="w-4 h-4" />
+                           <span>09:05 AM - 10:05 AM</span>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+            <Card className="shadow-md bg-teal-50 border-teal-100">
+                <CardContent className="p-4">
+                    <div className="flex justify-between items-start">
+                        <h4 className="font-bold text-md">Mathematics</h4>
+                         <div className="bg-teal-200 p-2 rounded-full">
+                           <BrainCircuit className="w-5 h-5 text-teal-700" />
+                        </div>
+                    </div>
+                     <div className="text-muted-foreground text-sm space-y-2 mt-4">
+                        <div className="flex items-center gap-2">
+                           <Calendar className="w-4 h-4" />
+                           <span>19 Jul 2025</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                           <Clock className="w-4 h-4" />
+                           <span>10:20 AM - 11:20 AM</span>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+    </div>
+);
+
+
+const LearnToday = () => {
+    const subjects = [
+        { name: 'Physics', icon: Atom, color: 'bg-red-500' },
+        { name: 'Chemistry', icon: FlaskConical, color: 'bg-orange-500' },
+        { name: 'Biology', icon: BrainCircuit, color: 'bg-blue-500' },
+    ]
+    return (
+        <Card className="shadow-md">
+            <CardContent className="p-4">
+                <h3 className="text-lg font-bold mb-4 text-center">What would you like to learn today?</h3>
+                <div className="flex justify-around">
+                    {subjects.map((subject) => (
+                        <div key={subject.name} className="flex flex-col items-center gap-2">
+                            <Button size="icon" className={cn("w-16 h-16 rounded-full text-white shadow-lg", subject.color)}>
+                                <subject.icon className="w-8 h-8" />
+                            </Button>
+                            <span className="text-sm font-medium">{subject.name}</span>
+                        </div>
+                    ))}
+                </div>
+            </CardContent>
+        </Card>
+    )
+};
 
 
 export function DashboardClient() {
-  const { tasks, isLoaded, toggleTaskCompletion, deleteTask } = useTasks();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingTask, setEditingTask] = useState<Task | null>(null);
-  const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(new Date());
-
-  const upcomingTasks = useMemo(
-    () => tasks.filter((task) => !task.completed && (isFuture(parseISO(task.date)) || isToday(parseISO(task.date)))),
-    [tasks]
-  );
-
-  const completedTasks = useMemo(
-    () => tasks.filter((task) => task.completed),
-    [tasks]
-  );
-
-  const taskDays = useMemo(() => {
-    return tasks.map(task => format(parseISO(task.date), 'yyyy-MM-dd'));
-  }, [tasks]);
-
-  const handleAddTask = () => {
-    setEditingTask(null);
-    setIsDialogOpen(true);
-  };
-  
-  const handleEditTask = (task: Task) => {
-    setEditingTask(task);
-    setIsDialogOpen(true);
-  };
-
-  const TaskItem = ({ task }: { task: Task }) => (
-    <div className="flex items-center gap-4 p-2 rounded-lg transition-colors hover:bg-muted/50">
-      <Checkbox
-        id={`task-${task.id}`}
-        checked={task.completed}
-        onCheckedChange={() => toggleTaskCompletion(task.id)}
-        aria-label={`Mark ${task.topic} as ${task.completed ? 'incomplete' : 'complete'}`}
-      />
-      <div className="flex-1 grid gap-1">
-        <div className="font-medium flex items-center justify-between">
-            <span className={cn("text-sm", task.completed ? "line-through text-muted-foreground" : "")}>{task.topic}</span>
-            <Badge variant="secondary" className="hidden sm:inline-flex">{task.subject}</Badge>
-        </div>
-        <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1">
-          <div className="flex items-center gap-1">
-            <CalendarIcon className="w-3 h-3" />
-            <span>{format(parseISO(task.date), "EEE, MMM d, h:mm a")}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Clock className="w-3 h-3" />
-            <span>{task.duration} min</span>
-          </div>
-          {task.notes && (
-             <div className="flex items-center gap-1">
-                <StickyNote className="w-3 h-3" />
-                <span className="truncate max-w-xs">{task.notes}</span>
-            </div>
-          )}
-        </div>
-      </div>
-      <div className="flex items-center gap-1">
-        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditTask(task)}>
-            <Pencil className="w-4 h-4" />
-            <span className="sr-only">Edit Task</span>
-        </Button>
-        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => deleteTask(task.id)}>
-            <Trash2 className="w-4 h-4" />
-            <span className="sr-only">Delete Task</span>
-        </Button>
-      </div>
-    </div>
-  );
-
   return (
-    <>
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Upcoming Tasks</CardTitle>
-              <CardDescription>Your scheduled study sessions.</CardDescription>
-            </div>
-            <Button onClick={handleAddTask} size="sm" className="gap-1">
-              <Plus className="h-4 w-4" />
-              New Task
-            </Button>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {!isLoaded ? (
-                <div className="flex items-center justify-center h-48">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                </div>
-            ) : upcomingTasks.length > 0 ? (
-                upcomingTasks.map(task => <TaskItem key={task.id} task={task} />)
-            ) : (
-                <p className="text-sm text-muted-foreground text-center py-8">No upcoming tasks. Enjoy your free time!</p>
-            )}
-            
-            {isLoaded && completedTasks.length > 0 && (
-                 <Accordion type="single" collapsible className="w-full">
-                    <AccordionItem value="completed-tasks">
-                        <AccordionTrigger>Completed Tasks ({completedTasks.length})</AccordionTrigger>
-                        <AccordionContent>
-                        {completedTasks.map(task => <TaskItem key={task.id} task={task} />)}
-                        </AccordionContent>
-                    </AccordionItem>
-                </Accordion>
-            )}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Calendar</CardTitle>
-            <CardDescription>View your study schedule.</CardDescription>
-          </CardHeader>
-          <CardContent className="flex justify-center">
-             <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={setSelectedDate}
-                className="rounded-md"
-                modifiers={{
-                    hasTask: (date) => taskDays.includes(format(date, 'yyyy-MM-dd')),
-                }}
-                modifiersClassNames={{
-                    hasTask: 'bg-primary/20 text-primary-foreground rounded-full',
-                }}
-                />
-          </CardContent>
-        </Card>
-      </div>
-      {isDialogOpen && (
-        <TaskDialog 
-          isOpen={isDialogOpen} 
-          setIsOpen={setIsDialogOpen}
-          task={editingTask}
-        />
-      )}
-    </>
+    <div className="space-y-6">
+      <AttendanceCard />
+      <FeedbackBanner />
+      <TestsSection />
+      <UpcomingClasses />
+      <LearnToday />
+    </div>
   );
 }
