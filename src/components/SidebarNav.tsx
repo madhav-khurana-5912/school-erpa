@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -9,6 +10,7 @@ import {
   FileText,
   MoreHorizontal,
   FileUp,
+  FilePlus,
 } from "lucide-react";
 import {
   SidebarHeader,
@@ -22,10 +24,11 @@ import { cn } from "@/lib/utils";
 const menuItems = [
   { href: "/", label: "Home", icon: Home },
   { href: "/planner", label: "Planner", icon: CalendarDays },
+  { href: "/import", label: "Import Syllabus", icon: FileUp },
+  { href: "/import/tests", label: "Import Tests", icon: FilePlus },
   { href: "/test-scores", label: "Test Scores", icon: ClipboardCheck },
   { href: "/tests", label: "Tests", icon: FileText },
   { href: "/more", label: "More", icon: MoreHorizontal },
-  { href: "/import", label: "Import Syllabus", icon: FileUp },
 ];
 
 export function SidebarNav() {
@@ -61,7 +64,7 @@ export function SidebarNav() {
               <Link href={item.href}>
                 <SidebarMenuButton
                   asChild
-                  isActive={pathname === item.href}
+                  isActive={pathname.startsWith(item.href) && (item.href !== '/' || pathname === '/')}
                   tooltip={item.label}
                   className={cn(
                     "w-full justify-start",

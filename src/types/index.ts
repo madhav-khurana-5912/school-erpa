@@ -1,3 +1,4 @@
+
 export interface Task {
   id: string;
   psid: string;
@@ -12,4 +13,12 @@ export interface Task {
 export interface SuggestedTask {
   topic: string;
   durationMinutes: number;
+}
+
+export interface Test {
+  id: string;
+  psid: string;
+  testName: string;
+  startDate: string; // ISO string
+  endDate: string;   // ISO string
 }
