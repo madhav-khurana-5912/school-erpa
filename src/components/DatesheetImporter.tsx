@@ -19,13 +19,11 @@ import { Skeleton } from "./ui/skeleton";
 import { Wand2, Calendar, Save, Upload, Image as ImageIcon } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import Image from "next/image";
-import { ScrollArea, ScrollBar } from "./ui/scroll-area";
 
 type ExtractedTest = Omit<Test, "id" | "psid">;
 
 export function DatesheetImporter() {
   const [imageFiles, setImageFiles] = useState<File[]>([]);
-  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [extractedTests, setExtractedTests] = useState<ExtractedTest[]>([]);
   const [isAnalyzing, startAnalyzing] = useTransition();
   const [isSaving, startSaving] = useTransition();
@@ -37,18 +35,6 @@ export function DatesheetImporter() {
     if (files) {
       const fileArray = Array.from(files);
       setImageFiles(fileArray);
-      
-      const newPreviews: string[] = [];
-      fileArray.forEach(file => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          newPreviews.push(reader.result as string);
-          if(newPreviews.length === fileArray.length) {
-            setImagePreviews(newPreviews);
-          }
-        };
-        reader.readAsDataURL(file);
-      });
     }
   };
 
@@ -102,7 +88,6 @@ export function DatesheetImporter() {
         });
         setExtractedTests([]);
         setImageFiles([]);
-        setImagePreviews([]);
       } catch (error) {
         toast({
           variant: "destructive",
@@ -132,19 +117,6 @@ export function DatesheetImporter() {
                     </div>
                 </label>
                 <input id="datesheet-upload" type="file" accept="image/*" multiple className="sr-only" onChange={handleFileChange} />
-                
-                {imagePreviews.length > 0 && (
-                     <ScrollArea className="w-full whitespace-nowrap rounded-md border">
-                        <div className="flex w-max space-x-4 p-4">
-                        {imagePreviews.map((src, index) => (
-                            <div key={index} className="relative aspect-video h-40 w-auto shrink-0 overflow-hidden rounded-md border">
-                                <Image src={src} alt={`Datesheet preview ${index + 1}`} layout="fill" objectFit="contain" />
-                            </div>
-                        ))}
-                        </div>
-                        <ScrollBar orientation="horizontal" />
-                    </ScrollArea>
-                )}
             </div>
         </CardContent>
         <CardFooter>
