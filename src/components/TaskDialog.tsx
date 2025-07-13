@@ -45,7 +45,7 @@ type TaskDialogProps = {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
   task?: Task | null;
-  initialData?: Partial<SuggestedTask & { topic: string, duration: number }>;
+  initialData?: Partial<Task & SuggestedTask>;
 };
 
 export function TaskDialog({ isOpen, setIsOpen, task, initialData }: TaskDialogProps) {
@@ -66,18 +66,18 @@ export function TaskDialog({ isOpen, setIsOpen, task, initialData }: TaskDialogP
   useEffect(() => {
     if (isOpen) {
         const defaultValues = task
-        ? {
+        ? { // Editing an existing task
             ...task,
             date: parseISO(task.date),
             time: format(parseISO(task.date), "HH:mm"),
           }
-        : {
-            subject: "",
+        : { // Creating a new task, potentially with initial data
+            subject: initialData?.subject || "",
             topic: initialData?.topic || "",
             date: new Date(),
             time: format(new Date(), "HH:mm"),
-            duration: initialData?.durationMinutes || 60,
-            notes: "",
+            duration: initialData?.durationMinutes || initialData?.duration || 60,
+            notes: initialData?.notes || "",
           };
       form.reset(defaultValues);
     }

@@ -5,7 +5,7 @@ import * as React from "react";
 import { useTasks } from "@/hooks/use-tasks";
 import { Button } from "@/components/ui/button";
 import { TaskDialog } from "@/components/TaskDialog";
-import type { Task } from "@/types";
+import type { Task, SuggestedTask } from "@/types";
 import { Plus, Loader2, Edit, Trash2, Clock, BookOpen, CheckCircle, Circle, Atom, FlaskConical, BrainCircuit } from "lucide-react";
 import { format, isToday, isFuture, formatDistanceToNow, parseISO } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
@@ -23,7 +23,7 @@ import {
 import { cn } from "@/lib/utils";
 
 
-const LearnToday = () => {
+const LearnToday = ({ onSubjectClick }: { onSubjectClick: (subject: string) => void }) => {
     const subjects = [
         { name: 'Physics', icon: Atom, color: 'bg-red-500' },
         { name: 'Chemistry', icon: FlaskConical, color: 'bg-orange-500' },
@@ -36,7 +36,7 @@ const LearnToday = () => {
                 <div className="flex justify-around">
                     {subjects.map((subject) => (
                         <div key={subject.name} className="flex flex-col items-center gap-2">
-                            <Button size="icon" className={cn("w-16 h-16 rounded-full text-white shadow-lg", subject.color)}>
+                            <Button size="icon" className={cn("w-16 h-16 rounded-full text-white shadow-lg", subject.color)} onClick={() => onSubjectClick(subject.name)}>
                                 <subject.icon className="w-8 h-8" />
                             </Button>
                             <span className="text-sm font-medium">{subject.name}</span>
@@ -53,14 +53,23 @@ export function PlannerClient() {
   const { tasks, isLoaded, deleteTask, toggleTaskCompletion } = useTasks();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [editingTask, setEditingTask] = React.useState<Task | null>(null);
+  const [initialTaskData, setInitialTaskData] = React.useState<Partial<Task> | undefined>(undefined);
 
   const handleAddNewTask = () => {
     setEditingTask(null);
+    setInitialTaskData(undefined);
     setIsDialogOpen(true);
   };
 
   const handleEditTask = (task: Task) => {
     setEditingTask(task);
+    setInitialTaskData(undefined);
+    setIsDialogOpen(true);
+  };
+
+  const handleAddNewTaskForSubject = (subject: string) => {
+    setEditingTask(null);
+    setInitialTaskData({ subject: subject });
     setIsDialogOpen(true);
   };
 
@@ -86,7 +95,7 @@ export function PlannerClient() {
 
   return (
     <div className="p-4 md:p-6 space-y-6">
-        <LearnToday />
+        <LearnToday onSubjectClick={handleAddNewTaskForSubject} />
       <div className="flex justify-end">
         <Button onClick={handleAddNewTask}>
           <Plus className="mr-2 h-4 w-4" /> Add New Task
@@ -160,6 +169,7 @@ export function PlannerClient() {
         isOpen={isDialogOpen}
         setIsOpen={setIsDialogOpen}
         task={editingTask}
+        initialData={initialTaskData}
       />
     </div>
   );
