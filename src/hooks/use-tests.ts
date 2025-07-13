@@ -13,6 +13,7 @@ import {
   writeBatch,
   doc,
   Timestamp,
+  deleteDoc,
 } from "firebase/firestore";
 import type { Test } from "@/types";
 
@@ -119,6 +120,28 @@ export function useTests() {
     },
     [psid, getTests]
   );
+  
+  const clearAllTests = useCallback(async () => {
+    if (!psid || !db) return;
 
-  return { tests, isLoaded, addAllTests };
+    // Get all docs to delete in a batch for efficiency
+    const q = query(collection(db, "tests"), where("psid", "==", psid));
+    const querySnapshot = await getDocs(q);
+    
+    if (querySnapshot.empty) {
+      await getTests(psid); // Refresh state
+      return;
+    }
+
+    const batch = writeBatch(db);
+    querySnapshot.docs.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+
+    await batch.commit();
+    await getTests(psid); // Re-fetch after clearing
+  }, [psid, getTests]);
+
+
+  return { tests, isLoaded, addAllTests, clearAllTests };
 }

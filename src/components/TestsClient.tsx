@@ -3,7 +3,7 @@
 
 import * as React from "react";
 import { useTests } from "@/hooks/use-tests";
-import { Loader2, Calendar } from "lucide-react";
+import { Loader2, Calendar, Trash2 } from "lucide-react";
 import { format, parseISO, isPast } from "date-fns";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "./ui/button";
@@ -12,10 +12,21 @@ import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Test } from "@/types";
 import { TestDetailsDialog } from "./TestDetailsDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
 
-const TestList = ({ tests }: { tests: Test[] }) => {
-  const [selectedTest, setSelectedTest] = React.useState<Test | null>(null);
 
+const TestList = ({ tests, onTestSelect }: { tests: Test[], onTestSelect: (test: Test) => void }) => {
   if (tests.length === 0) {
     return (
       <div className="text-center text-muted-foreground py-10 border-2 border-dashed rounded-lg mt-4">
@@ -49,7 +60,7 @@ const TestList = ({ tests }: { tests: Test[] }) => {
                 </div>
               </div>
               <div className="mt-4">
-                 <Button variant="link" onClick={() => setSelectedTest(test)} className="text-sm font-semibold text-blue-600 p-0 h-auto">
+                 <Button variant="link" onClick={() => onTestSelect(test)} className="text-sm font-semibold text-blue-600 p-0 h-auto">
                     View Details & Syllabus
                  </Button>
               </div>
@@ -57,23 +68,39 @@ const TestList = ({ tests }: { tests: Test[] }) => {
           </Card>
         )
       })}
-       {selectedTest && (
-            <TestDetailsDialog
-                isOpen={!!selectedTest}
-                setIsOpen={(isOpen) => !isOpen && setSelectedTest(null)}
-                test={selectedTest}
-            />
-        )}
     </div>
   );
 };
 
 
 export function TestsClient() {
-  const { tests, isLoaded } = useTests();
+  const { tests, isLoaded, clearAllTests } = useTests();
+  const [selectedTest, setSelectedTest] = React.useState<Test | null>(null);
+  const [isClearing, setIsClearing] = React.useState(false);
+  const { toast } = useToast();
 
   const upcomingTests = React.useMemo(() => tests.filter(test => !isPast(parseISO(test.endDate))), [tests]);
   const completedTests = React.useMemo(() => tests.filter(test => isPast(parseISO(test.endDate))), [tests]);
+  
+  const handleClearTests = async () => {
+    setIsClearing(true);
+    try {
+      await clearAllTests();
+      toast({
+        title: "Success",
+        description: "All tests have been cleared.",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Could not clear tests. Please try again.",
+      });
+    } finally {
+      setIsClearing(false);
+    }
+  };
+
 
   if (!isLoaded) {
     return (
@@ -99,17 +126,51 @@ export function TestsClient() {
   }
 
   return (
-    <Tabs defaultValue="upcoming" className="w-full">
-      <TabsList className="grid w-full grid-cols-2">
-        <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-        <TabsTrigger value="completed">Completed</TabsTrigger>
-      </TabsList>
-      <TabsContent value="upcoming">
-        <TestList tests={upcomingTests} />
-      </TabsContent>
-      <TabsContent value="completed">
-        <TestList tests={completedTests} />
-      </TabsContent>
-    </Tabs>
+    <>
+        <div className="flex justify-end">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" size="sm" disabled={isClearing}>
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  {isClearing ? 'Clearing...' : 'Clear All Tests'}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete all
+                    your test entries.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleClearTests} className="bg-destructive hover:bg-destructive/90">
+                    Yes, clear all tests
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+        </div>
+        <Tabs defaultValue="upcoming" className="w-full mt-4">
+        <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="upcoming">Upcoming ({upcomingTests.length})</TabsTrigger>
+            <TabsTrigger value="completed">Completed ({completedTests.length})</TabsTrigger>
+        </TabsList>
+        <TabsContent value="upcoming">
+            <TestList tests={upcomingTests} onTestSelect={setSelectedTest} />
+        </TabsContent>
+        <TabsContent value="completed">
+            <TestList tests={completedTests} onTestSelect={setSelectedTest} />
+        </TabsContent>
+        </Tabs>
+         {selectedTest && (
+            <TestDetailsDialog
+                isOpen={!!selectedTest}
+                setIsOpen={(isOpen) => !isOpen && setSelectedTest(null)}
+                test={selectedTest}
+            />
+        )}
+    </>
   );
 }
