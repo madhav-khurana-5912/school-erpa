@@ -66,55 +66,6 @@ const TestsSection = () => (
     </div>
 );
 
-const UpcomingClasses = () => (
-    <div>
-        <h3 className="text-lg font-bold mb-2">Upcoming Classes</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card className="shadow-md bg-orange-50 border-orange-100">
-                <CardContent className="p-4">
-                    <div className="flex justify-between items-start">
-                        <h4 className="font-bold text-md">Social Science</h4>
-                        <div className="bg-orange-200 p-2 rounded-full">
-                           <BookOpen className="w-5 h-5 text-orange-700" />
-                        </div>
-                    </div>
-                    <div className="text-muted-foreground text-sm space-y-2 mt-4">
-                        <div className="flex items-center gap-2">
-                           <Calendar className="w-4 h-4" />
-                           <span>19 Jul 2025</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                           <Clock className="w-4 h-4" />
-                           <span>09:05 AM - 10:05 AM</span>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-            <Card className="shadow-md bg-teal-50 border-teal-100">
-                <CardContent className="p-4">
-                    <div className="flex justify-between items-start">
-                        <h4 className="font-bold text-md">Mathematics</h4>
-                         <div className="bg-teal-200 p-2 rounded-full">
-                           <BrainCircuit className="w-5 h-5 text-teal-700" />
-                        </div>
-                    </div>
-                     <div className="text-muted-foreground text-sm space-y-2 mt-4">
-                        <div className="flex items-center gap-2">
-                           <Calendar className="w-4 h-4" />
-                           <span>19 Jul 2025</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                           <Clock className="w-4 h-4" />
-                           <span>10:20 AM - 11:20 AM</span>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
-    </div>
-);
-
-
 const LearnToday = () => {
     const subjects = [
         { name: 'Physics', icon: Atom, color: 'bg-red-500' },
@@ -146,7 +97,6 @@ export function DashboardClient() {
     <div className="space-y-6">
       <SyllabusAnalyzerCard />
       <TestsSection />
-      <UpcomingClasses />
       <LearnToday />
     </div>
   );
