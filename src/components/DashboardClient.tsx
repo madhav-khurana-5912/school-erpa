@@ -87,10 +87,11 @@ const TasksSection = () => {
     const { tasks, isLoaded } = useTasks();
 
     const upcomingTasks = React.useMemo(() => {
-        const now = new Date();
-        now.setHours(0, 0, 0, 0); // Start of today
         return tasks
-            .filter(task => !task.completed && isFuture(parseISO(task.date)))
+            .filter(task => {
+                const taskDate = parseISO(task.date);
+                return !task.completed && (isToday(taskDate) || isFuture(taskDate));
+            })
             .slice(0, 3); // Show up to 3 upcoming tasks
     }, [tasks]);
 
