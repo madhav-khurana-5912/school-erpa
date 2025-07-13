@@ -42,6 +42,8 @@ const prompt = ai.definePrompt({
   output: {schema: TestAnalyzerOutputSchema},
   prompt: `You are an AI assistant that extracts structured test data from one or more images of a test datesheet. Analyze the following datesheet images and extract all tests, their start and end dates, and their syllabus if provided. Today's date is ${new Date().toDateString()}.
 
+IMPORTANT: Some tests, like a "Unit Test" (UT), may have multiple subjects listed on the same date. If you see multiple subjects for the same test on the same date, you MUST group them into a single test event. The 'testName' should be the name of the test event (e.g., "Unit Test 1"), and the 'syllabus' should be a combined list of all subjects for that test (e.g., "Social Science, English, MAT"). Do NOT create separate test entries for each subject of the same test event.
+
   Datesheet Images:
   {{#each datesheetPhotoDataUris}}
   {{media url=this}}
