@@ -32,28 +32,6 @@ const SyllabusAnalyzerCard = () => (
     </Card>
 );
 
-const FeedbackBanner = () => (
-    <div className="bg-green-100 border border-green-200 text-green-800 rounded-lg p-4 flex items-center justify-between">
-        <div className="flex items-start gap-3">
-            <CheckCircle2 className="h-6 w-6 text-green-600 mt-1" />
-            <div>
-                <h4 className="font-bold">Thank You for Your Feedback!</h4>
-                <p className="text-sm text-green-700">We appreciate your input. It helps us make meaningful improvements.</p>
-            </div>
-        </div>
-        <div className="hidden sm:block">
-            <Image 
-                src="https://placehold.co/120x80.png" 
-                alt="Feedback graphic"
-                data-ai-hint="feedback survey"
-                width={120} 
-                height={80}
-                className="rounded-lg"
-            />
-        </div>
-    </div>
-);
-
 const TestsSection = () => (
     <div>
         <div className="flex justify-between items-center mb-2">
@@ -167,7 +145,6 @@ export function DashboardClient() {
   return (
     <div className="space-y-6">
       <SyllabusAnalyzerCard />
-      <FeedbackBanner />
       <TestsSection />
       <UpcomingClasses />
       <LearnToday />
