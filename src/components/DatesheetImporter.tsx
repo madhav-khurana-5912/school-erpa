@@ -19,12 +19,13 @@ import { Skeleton } from "./ui/skeleton";
 import { Wand2, Calendar, Save, Upload, Image as ImageIcon } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import Image from "next/image";
+import { ScrollArea, ScrollBar } from "./ui/scroll-area";
 
 type ExtractedTest = Omit<Test, "id" | "psid">;
 
 export function DatesheetImporter() {
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [extractedTests, setExtractedTests] = useState<ExtractedTest[]>([]);
   const [isAnalyzing, startAnalyzing] = useTransition();
   const [isSaving, startSaving] = useTransition();
@@ -32,14 +33,22 @@ export function DatesheetImporter() {
   const { toast } = useToast();
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+    const files = e.target.files;
+    if (files) {
+      const fileArray = Array.from(files);
+      setImageFiles(fileArray);
+      
+      const newPreviews: string[] = [];
+      fileArray.forEach(file => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          newPreviews.push(reader.result as string);
+          if(newPreviews.length === fileArray.length) {
+            setImagePreviews(newPreviews);
+          }
+        };
+        reader.readAsDataURL(file);
+      });
     }
   };
 
@@ -53,13 +62,13 @@ export function DatesheetImporter() {
   }
 
   const handleAnalyze = () => {
-    if (!imageFile) return;
+    if (imageFiles.length === 0) return;
 
     startAnalyzing(async () => {
       setExtractedTests([]);
       try {
-        const datesheetPhotoDataUri = await fileToDataUri(imageFile);
-        const { data, error } = await getTestsFromDatesheet(datesheetPhotoDataUri);
+        const datesheetPhotoDataUris = await Promise.all(imageFiles.map(fileToDataUri));
+        const { data, error } = await getTestsFromDatesheet(datesheetPhotoDataUris);
         if (error) {
           toast({
             variant: "destructive",
@@ -77,7 +86,7 @@ export function DatesheetImporter() {
         toast({
             variant: "destructive",
             title: "Error",
-            description: "Could not read the image file. Please try again.",
+            description: "Could not read the image file(s). Please try again.",
         });
       }
     });
@@ -92,8 +101,8 @@ export function DatesheetImporter() {
           description: "All extracted tests have been saved to your planner.",
         });
         setExtractedTests([]);
-        setImageFile(null);
-        setImagePreview(null);
+        setImageFiles([]);
+        setImagePreviews([]);
       } catch (error) {
         toast({
           variant: "destructive",
@@ -110,7 +119,7 @@ export function DatesheetImporter() {
         <CardHeader>
           <CardTitle>Analyze Your Datesheet</CardTitle>
           <CardDescription>
-            Upload a picture of your test schedule. Our AI will extract all the tests and their dates for you.
+            Upload picture(s) of your test schedule. Our AI will extract all the tests and their dates for you.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -118,21 +127,28 @@ export function DatesheetImporter() {
                 <label htmlFor="datesheet-upload" className="block w-full cursor-pointer rounded-lg border-2 border-dashed border-muted-foreground/30 p-10 text-center hover:bg-muted/50">
                     <div className="flex flex-col items-center gap-2 text-muted-foreground">
                         <Upload className="h-8 w-8" />
-                        <span className="font-medium">{imageFile ? "Change image" : "Click to upload an image"}</span>
+                        <span className="font-medium">{imageFiles.length > 0 ? `${imageFiles.length} image(s) selected` : "Click to upload images"}</span>
                         <span className="text-xs">PNG, JPG, or GIF</span>
                     </div>
                 </label>
-                <input id="datesheet-upload" type="file" accept="image/*" className="sr-only" onChange={handleFileChange} />
+                <input id="datesheet-upload" type="file" accept="image/*" multiple className="sr-only" onChange={handleFileChange} />
                 
-                {imagePreview && (
-                    <div className="relative aspect-video w-full overflow-hidden rounded-md border">
-                        <Image src={imagePreview} alt="Datesheet preview" layout="fill" objectFit="contain" />
-                    </div>
+                {imagePreviews.length > 0 && (
+                     <ScrollArea className="w-full whitespace-nowrap rounded-md border">
+                        <div className="flex w-max space-x-4 p-4">
+                        {imagePreviews.map((src, index) => (
+                            <div key={index} className="relative aspect-video h-40 w-auto shrink-0 overflow-hidden rounded-md border">
+                                <Image src={src} alt={`Datesheet preview ${index + 1}`} layout="fill" objectFit="contain" />
+                            </div>
+                        ))}
+                        </div>
+                        <ScrollBar orientation="horizontal" />
+                    </ScrollArea>
                 )}
             </div>
         </CardContent>
         <CardFooter>
-          <Button onClick={handleAnalyze} disabled={isAnalyzing || !imageFile}>
+          <Button onClick={handleAnalyze} disabled={isAnalyzing || imageFiles.length === 0}>
             {isAnalyzing ? "Analyzing..." : <> <Wand2 className="mr-2 h-4 w-4" /> Analyze Datesheet </>}
           </Button>
         </CardFooter>
