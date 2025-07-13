@@ -6,7 +6,7 @@ import { useTasks } from "@/hooks/use-tasks";
 import { Button } from "@/components/ui/button";
 import { TaskDialog } from "@/components/TaskDialog";
 import type { Task, SuggestedTask } from "@/types";
-import { Plus, Loader2, Edit, Trash2, Clock, BookOpen, CheckCircle, Circle, Atom, FlaskConical, BrainCircuit } from "lucide-react";
+import { Plus, Loader2, Edit, Trash2, Clock, BookOpen, CheckCircle, Circle, Atom, FlaskConical, BrainCircuit, Landmark, Brain, Sigma, BookCopy } from "lucide-react";
 import { format, isToday, isFuture, formatDistanceToNow, parseISO } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import {
@@ -28,18 +28,22 @@ const LearnToday = ({ onSubjectClick }: { onSubjectClick: (subject: string) => v
         { name: 'Physics', icon: Atom, color: 'bg-red-500' },
         { name: 'Chemistry', icon: FlaskConical, color: 'bg-orange-500' },
         { name: 'Biology', icon: BrainCircuit, color: 'bg-blue-500' },
+        { name: 'Social Sc', icon: Landmark, color: 'bg-yellow-500' },
+        { name: 'MAT', icon: Brain, color: 'bg-purple-500' },
+        { name: 'Maths', icon: Sigma, color: 'bg-green-500' },
+        { name: 'English', icon: BookCopy, color: 'bg-pink-500' },
     ]
     return (
         <Card className="shadow-md">
             <CardContent className="p-4">
                 <h3 className="text-lg font-bold mb-4 text-center">What would you like to learn today?</h3>
-                <div className="flex justify-around">
+                <div className="grid grid-cols-4 gap-4 md:flex md:justify-around">
                     {subjects.map((subject) => (
                         <div key={subject.name} className="flex flex-col items-center gap-2">
-                            <Button size="icon" className={cn("w-16 h-16 rounded-full text-white shadow-lg", subject.color)} onClick={() => onSubjectClick(subject.name)}>
-                                <subject.icon className="w-8 h-8" />
+                            <Button size="icon" className={cn("w-14 h-14 md:w-16 md:h-16 rounded-full text-white shadow-lg", subject.color)} onClick={() => onSubjectClick(subject.name)}>
+                                <subject.icon className="w-7 h-7 md:w-8 md:h-8" />
                             </Button>
-                            <span className="text-sm font-medium">{subject.name}</span>
+                            <span className="text-xs md:text-sm font-medium">{subject.name}</span>
                         </div>
                     ))}
                 </div>
