@@ -13,8 +13,6 @@ import {
   writeBatch,
   doc,
   Timestamp,
-  orderBy,
-  limit,
 } from "firebase/firestore";
 import type { Test } from "@/types";
 
@@ -38,9 +36,6 @@ export const fetchTests = async (psid: string, force = false): Promise<Test[]> =
     const q = query(
       collection(db, "tests"),
       where("psid", "==", psid)
-      // Removing orderBy to avoid index error while it's building.
-      // We will sort on the client.
-      // orderBy("startDate") 
     );
     const querySnapshot = await getDocs(q);
     const userTests = querySnapshot.docs.map((doc) => {
@@ -53,7 +48,6 @@ export const fetchTests = async (psid: string, force = false): Promise<Test[]> =
       } as Test;
     });
 
-    // Sort tests by start date on the client side
     userTests.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
 
     cachedTests = userTests;
@@ -108,12 +102,16 @@ export function useTests() {
       
       testsToAdd.forEach(testData => {
         const docRef = doc(collection(db, "tests"));
-        batch.set(docRef, {
+        const dataToSet: any = {
           ...testData,
           psid,
           startDate: new Date(testData.startDate),
           endDate: new Date(testData.endDate),
-        });
+        };
+        if (testData.syllabus) {
+            dataToSet.syllabus = testData.syllabus;
+        }
+        batch.set(docRef, dataToSet);
       });
       
       await batch.commit();

@@ -16,9 +16,8 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import type { Test } from "@/types";
 import { Skeleton } from "./ui/skeleton";
-import { Wand2, Calendar, Save, Upload, Image as ImageIcon } from "lucide-react";
+import { Wand2, Calendar, Save, Upload, ImageIcon } from "lucide-react";
 import { format, parseISO } from "date-fns";
-import Image from "next/image";
 
 type ExtractedTest = Omit<Test, "id" | "psid">;
 

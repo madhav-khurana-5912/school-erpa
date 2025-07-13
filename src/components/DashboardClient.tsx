@@ -6,9 +6,11 @@ import { format, parseISO } from "date-fns";
 import { useTests } from "@/hooks/use-tests";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, MapPin, ChevronRight, Atom, FlaskConical, BrainCircuit, Wand2, Loader2 } from "lucide-react";
+import { Calendar, MapPin, ChevronRight, Atom, FlaskConical, BrainCircuit, Wand2, Loader2, BookOpen } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import type { Test } from "@/types";
+import { TestDetailsDialog } from "./TestDetailsDialog";
 
 const SyllabusAnalyzerCard = () => (
     <Card className="shadow-md bg-primary/10 border-primary/20">
@@ -33,6 +35,7 @@ const SyllabusAnalyzerCard = () => (
 
 const TestsSection = () => {
     const { tests, isLoaded } = useTests();
+    const [selectedTest, setSelectedTest] = React.useState<Test | null>(null);
 
     const upcomingTest = React.useMemo(() => {
         const now = new Date();
@@ -43,7 +46,7 @@ const TestsSection = () => {
         <div>
             <div className="flex justify-between items-center mb-2">
                 <h3 className="text-lg font-bold">Tests</h3>
-                <Link href="#" className="text-sm text-blue-600 hover:underline flex items-center">
+                <Link href="/tests" className="text-sm text-blue-600 hover:underline flex items-center">
                     View all <ChevronRight className="h-4 w-4" />
                 </Link>
             </div>
@@ -72,21 +75,28 @@ const TestsSection = () => {
                                 </div>
                             </div>
                             <div className="mt-4">
-                                <Link href="#" className="text-sm font-semibold text-blue-600 hover:underline">
-                                    Test Details
-                                </Link>
+                                <Button variant="link" onClick={() => setSelectedTest(upcomingTest)} className="text-sm font-semibold text-blue-600 p-0 h-auto">
+                                    View Details & Syllabus
+                                </Button>
                             </div>
                         </>
                     ) : (
                         <div className="text-center text-muted-foreground py-4">
                             <p>No upcoming tests found.</p>
-                            <Button variant="link" asChild className="p-0 h-auto">
+                             <Button variant="link" asChild className="p-0 h-auto">
                                 <Link href="/import/tests">Import your test datesheet</Link>
                             </Button>
                         </div>
                     )}
                 </CardContent>
             </Card>
+            {selectedTest && (
+                <TestDetailsDialog
+                    isOpen={!!selectedTest}
+                    setIsOpen={(isOpen) => !isOpen && setSelectedTest(null)}
+                    test={selectedTest}
+                />
+            )}
         </div>
     );
 };

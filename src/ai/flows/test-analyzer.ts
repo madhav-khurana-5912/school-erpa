@@ -26,6 +26,7 @@ const TestAnalyzerOutputSchema = z.object({
       testName: z.string().describe('The name of the test.'),
       startDate: z.string().describe('The start date of the test in YYYY-MM-DD format.'),
       endDate: z.string().describe('The end date of the test in YYYY-MM-DD format.'),
+      syllabus: z.string().optional().describe('The syllabus for the test, if mentioned. Include all topics and subjects.'),
     })
   ).describe('A list of tests derived from the datesheet.'),
 });
@@ -39,7 +40,7 @@ const prompt = ai.definePrompt({
   name: 'datesheetAnalyzerPrompt',
   input: {schema: TestAnalyzerInputSchema},
   output: {schema: TestAnalyzerOutputSchema},
-  prompt: `You are an AI assistant that extracts structured test data from one or more images of a test datesheet. Analyze the following datesheet images and extract all tests. Today's date is ${new Date().toDateString()}.
+  prompt: `You are an AI assistant that extracts structured test data from one or more images of a test datesheet. Analyze the following datesheet images and extract all tests, their start and end dates, and their syllabus if provided. Today's date is ${new Date().toDateString()}.
 
   Datesheet Images:
   {{#each datesheetPhotoDataUris}}

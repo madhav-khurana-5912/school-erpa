@@ -21,4 +21,5 @@ export interface Test {
   testName: string;
   startDate: string; // ISO string
   endDate: string;   // ISO string
+  syllabus?: string;
 }

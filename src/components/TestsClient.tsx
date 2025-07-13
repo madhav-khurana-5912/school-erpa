@@ -10,8 +10,12 @@ import { Button } from "./ui/button";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { Test } from "@/types";
+import { TestDetailsDialog } from "./TestDetailsDialog";
 
-const TestList = ({ tests }: { tests: ReturnType<typeof useTests>["tests"] }) => {
+const TestList = ({ tests }: { tests: Test[] }) => {
+  const [selectedTest, setSelectedTest] = React.useState<Test | null>(null);
+
   if (tests.length === 0) {
     return (
       <div className="text-center text-muted-foreground py-10 border-2 border-dashed rounded-lg mt-4">
@@ -45,14 +49,21 @@ const TestList = ({ tests }: { tests: ReturnType<typeof useTests>["tests"] }) =>
                 </div>
               </div>
               <div className="mt-4">
-                <Link href="#" className="text-sm font-semibold text-blue-600 hover:underline">
-                  View Details & Syllabus
-                </Link>
+                 <Button variant="link" onClick={() => setSelectedTest(test)} className="text-sm font-semibold text-blue-600 p-0 h-auto">
+                    View Details & Syllabus
+                 </Button>
               </div>
             </CardContent>
           </Card>
         )
       })}
+       {selectedTest && (
+            <TestDetailsDialog
+                isOpen={!!selectedTest}
+                setIsOpen={(isOpen) => !isOpen && setSelectedTest(null)}
+                test={selectedTest}
+            />
+        )}
     </div>
   );
 };
