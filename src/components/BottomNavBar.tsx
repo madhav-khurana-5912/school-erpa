@@ -3,14 +3,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, CalendarDays, ClipboardCheck, FileText, MoreHorizontal } from "lucide-react";
+import { Home, CalendarDays, FileUp, FileText, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const menuItems = [
   { href: "/", label: "Home", icon: Home },
   { href: "/planner", label: "Planner", icon: CalendarDays },
-  { href: "/test-scores", label: "Test Scores", icon: ClipboardCheck },
+  { href: "/import", label: "Import", icon: FileUp },
   { href: "/tests", label: "Tests", icon: FileText },
   { href: "/more", label: "More", icon: MoreHorizontal },
 ];
