@@ -1,3 +1,4 @@
+
 // src/hooks/use-tasks.ts
 "use client";
 
@@ -112,12 +113,16 @@ export function useTasks() {
     async (taskData: Omit<Task, "id" | "completed" | "psid">) => {
       if (!psid || !db) return;
       try {
-        await addDoc(collection(db, "tasks"), {
+        const dataToAdd: any = {
           ...taskData,
           psid: psid,
           completed: false,
           date: new Date(taskData.date),
-        });
+        };
+        if (!dataToAdd.activityType) {
+            dataToAdd.activityType = "Learn Concept"; // Default value
+        }
+        await addDoc(collection(db, "tasks"), dataToAdd);
         await getTasks(psid); // Re-fetch after adding
       } catch (error) {
         console.error("Error adding task: ", error);
@@ -131,10 +136,14 @@ export function useTasks() {
       if (!psid || !db) return;
       const { id, ...taskData } = updatedTask;
       try {
-        await updateDoc(doc(db, "tasks", id), {
+        const dataToUpdate: any = {
             ...taskData,
             date: new Date(taskData.date)
-        });
+        }
+        if (!dataToUpdate.activityType) {
+            dataToUpdate.activityType = "Learn Concept";
+        }
+        await updateDoc(doc(db, "tasks", id), dataToUpdate);
         await getTasks(psid); // Re-fetch after updating
       } catch (error) {
         console.error("Error updating task: ", error);

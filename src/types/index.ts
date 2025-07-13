@@ -6,6 +6,7 @@ export interface Task {
   topic: string;
   date: string; // ISO string for date and time
   duration: number; // in minutes
+  activityType?: string; // e.g., "Learn Concept", "Practice Questions", "Revise"
   notes?: string;
   completed: boolean;
 }

@@ -1,3 +1,4 @@
+
 // src/components/PlannerClient.tsx
 "use client";
 
@@ -6,7 +7,7 @@ import { useTasks } from "@/hooks/use-tasks";
 import { Button } from "@/components/ui/button";
 import { TaskDialog } from "@/components/TaskDialog";
 import type { Task, SuggestedTask } from "@/types";
-import { Plus, Loader2, Edit, Trash2, Clock, BookOpen, CheckCircle, Circle, Atom, FlaskConical, BrainCircuit, Landmark, Brain, Sigma, BookCopy } from "lucide-react";
+import { Plus, Loader2, Edit, Trash2, Clock, BookOpen, CheckCircle, Circle, Atom, FlaskConical, BrainCircuit, Landmark, Brain, Sigma, BookCopy, Lightbulb, Pencil, Repeat, Clapperboard, StickyNote } from "lucide-react";
 import { format, isToday, isFuture, formatDistanceToNow, parseISO } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import {
@@ -50,6 +51,15 @@ const LearnToday = ({ onSubjectClick }: { onSubjectClick: (subject: string) => v
             </CardContent>
         </Card>
     )
+};
+
+const activityIcons: { [key: string]: React.ElementType } = {
+  "Learn Concept": Lightbulb,
+  "Practice Questions": Pencil,
+  "Revise": Repeat,
+  "Watch Lecture": Clapperboard,
+  "Take Notes": StickyNote,
+  "default": BookOpen,
 };
 
 
@@ -121,7 +131,9 @@ export function PlannerClient() {
              <div key={date}>
                 <h2 className="text-lg font-bold mb-2 sticky top-0 bg-background py-2">{getRelativeDate(date)}</h2>
                 <div className="space-y-4">
-                    {groupedTasks[date].map((task) => (
+                    {groupedTasks[date].map((task) => {
+                       const ActivityIcon = activityIcons[task.activityType || 'default'] || activityIcons.default;
+                       return (
                         <Card key={task.id} className={cn("shadow-sm transition-all", task.completed && "bg-muted/50")}>
                             <CardContent className="p-4 flex items-start gap-4">
                                 <Button variant="ghost" size="icon" className="mt-1" onClick={() => toggleTaskCompletion(task.id)}>
@@ -130,9 +142,10 @@ export function PlannerClient() {
                                 <div className="flex-1">
                                     <p className={cn("font-semibold", task.completed && "line-through text-muted-foreground")}>{task.topic}</p>
                                     <p className={cn("text-sm text-muted-foreground", task.completed && "line-through")}>{task.subject}</p>
-                                    <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
+                                    <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2 flex-wrap">
                                         <span className="flex items-center gap-1.5"><Clock className="w-4 h-4" /> {format(parseISO(task.date), 'p')}</span>
                                         <span className="flex items-center gap-1.5"><BookOpen className="w-4 h-4" /> {task.duration} mins</span>
+                                        {task.activityType && <span className="flex items-center gap-1.5"><ActivityIcon className="w-4 h-4" /> {task.activityType}</span>}
                                     </div>
                                     {task.notes && <p className="text-sm mt-2 p-2 bg-secondary rounded-md">{task.notes}</p>}
                                 </div>
@@ -162,7 +175,7 @@ export function PlannerClient() {
                                 </div>
                             </CardContent>
                         </Card>
-                    ))}
+                    )})}
                 </div>
             </div>
           ))}

@@ -31,10 +31,12 @@ import { cn } from "@/lib/utils";
 import { format, setHours, setMinutes, parseISO } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { Calendar } from "./ui/calendar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 
 const formSchema = z.object({
   subject: z.string().min(1, "Subject is required."),
   topic: z.string().min(1, "Topic is required."),
+  activityType: z.string().optional(),
   date: z.date({ required_error: "A date is required." }),
   time: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:mm)."),
   duration: z.coerce.number().min(1, "Duration must be at least 1 minute."),
@@ -56,6 +58,7 @@ export function TaskDialog({ isOpen, setIsOpen, task, initialData }: TaskDialogP
     defaultValues: {
       subject: "",
       topic: "",
+      activityType: "Learn Concept",
       date: new Date(),
       time: format(new Date(), "HH:mm"),
       duration: 60,
@@ -70,10 +73,12 @@ export function TaskDialog({ isOpen, setIsOpen, task, initialData }: TaskDialogP
             ...task,
             date: parseISO(task.date),
             time: format(parseISO(task.date), "HH:mm"),
+            activityType: task.activityType || "Learn Concept",
           }
         : { // Creating a new task, potentially with initial data
             subject: initialData?.subject || "",
             topic: initialData?.topic || "",
+            activityType: initialData?.activityType || "Learn Concept",
             date: new Date(),
             time: format(new Date(), "HH:mm"),
             duration: initialData?.durationMinutes || initialData?.duration || 60,
@@ -90,6 +95,7 @@ export function TaskDialog({ isOpen, setIsOpen, task, initialData }: TaskDialogP
     const taskData = {
       subject: values.subject,
       topic: values.topic,
+      activityType: values.activityType,
       date: combinedDateTime.toISOString(),
       duration: values.duration,
       notes: values.notes,
@@ -127,7 +133,7 @@ export function TaskDialog({ isOpen, setIsOpen, task, initialData }: TaskDialogP
                 </FormItem>
               )}
             />
-            <FormField
+             <FormField
               control={form.control}
               name="topic"
               render={({ field }) => (
@@ -136,6 +142,30 @@ export function TaskDialog({ isOpen, setIsOpen, task, initialData }: TaskDialogP
                   <FormControl>
                     <Input placeholder="e.g. Algebra" {...field} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="activityType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Activity Type</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select an activity" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="Learn Concept">Learn Concept</SelectItem>
+                      <SelectItem value="Practice Questions">Practice Questions</SelectItem>
+                      <SelectItem value="Revise">Revise</SelectItem>
+                      <SelectItem value="Watch Lecture">Watch Lecture</SelectItem>
+                      <SelectItem value="Take Notes">Take Notes</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
