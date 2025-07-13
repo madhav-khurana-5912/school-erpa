@@ -197,7 +197,8 @@ export function TaskDialog({ isOpen, setIsOpen, task, initialData }: TaskDialogP
                               <CommandItem
                                 value={topic}
                                 key={topic}
-                                onSelect={() => {
+                                onPointerDown={(e) => {
+                                  e.preventDefault();
                                   form.setValue("topic", topic)
                                   setIsPopoverOpen(false)
                                 }}
@@ -332,3 +333,5 @@ export function TaskDialog({ isOpen, setIsOpen, task, initialData }: TaskDialogP
     </Dialog>
   );
 }
+
+    
