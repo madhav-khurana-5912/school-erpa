@@ -98,8 +98,8 @@ export function TaskDialog({ isOpen, setIsOpen, task, initialData }: TaskDialogP
   }, [isOpen, task, initialData, form]);
 
   useEffect(() => {
-    if (watchedSubject && isSyllabusLoaded && syllabus?.topics?.length) {
-      startSuggesting(async () => {
+    const fetchSuggestions = async () => {
+      if (watchedSubject && isSyllabusLoaded && syllabus?.topics?.length) {
         const { data } = await getTopicSuggestions({
           subject: watchedSubject,
           syllabusTopics: syllabus.topics,
@@ -107,10 +107,14 @@ export function TaskDialog({ isOpen, setIsOpen, task, initialData }: TaskDialogP
         if (data) {
           setSuggestedTopics(data.suggestedTopics);
         }
-      });
-    } else {
-      setSuggestedTopics([]);
-    }
+      } else {
+        setSuggestedTopics([]);
+      }
+    };
+  
+    startSuggesting(() => {
+      fetchSuggestions();
+    });
   }, [watchedSubject, isSyllabusLoaded, syllabus]);
 
 
@@ -142,7 +146,7 @@ export function TaskDialog({ isOpen, setIsOpen, task, initialData }: TaskDialogP
           <DialogTitle>{task ? "Edit Task" : "Add New Task"}</DialogTitle>
           <DialogDescription>
             {task ? "Update the details of your study session." : "Plan a new study session to stay on track."}
-          </Description>
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
