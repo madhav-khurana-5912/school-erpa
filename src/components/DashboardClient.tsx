@@ -80,9 +80,9 @@ const TestsSection = () => {
                     ) : (
                         <div className="text-center text-muted-foreground py-4">
                             <p>No upcoming tests found.</p>
-                            <Link href="/import/tests" legacyBehavior>
-                                <Button variant="link" className="p-0 h-auto">Import your test datesheet</Button>
-                            </Link>
+                            <Button variant="link" asChild className="p-0 h-auto">
+                                <Link href="/import/tests">Import your test datesheet</Link>
+                            </Button>
                         </div>
                     )}
                 </CardContent>
