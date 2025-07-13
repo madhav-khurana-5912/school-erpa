@@ -98,7 +98,7 @@ export function TaskDialog({ isOpen, setIsOpen, task, initialData }: TaskDialogP
   }, [isOpen, task, initialData, form]);
 
   useEffect(() => {
-    if (watchedSubject && isSyllabusLoaded && syllabus && syllabus.topics.length > 0) {
+    if (watchedSubject && isSyllabusLoaded && syllabus?.topics?.length) {
       startSuggesting(async () => {
         const { data } = await getTopicSuggestions({
           subject: watchedSubject,
