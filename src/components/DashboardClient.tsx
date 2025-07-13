@@ -6,9 +6,8 @@ import { format, parseISO } from "date-fns";
 import { useTests } from "@/hooks/use-tests";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, MapPin, ChevronRight, Atom, FlaskConical, BrainCircuit, Wand2, Loader2, BookOpen } from "lucide-react";
+import { Calendar, MapPin, ChevronRight, Wand2, Loader2, BookOpen } from "lucide-react";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
 import type { Test } from "@/types";
 
 const SyllabusAnalyzerCard = () => (
@@ -34,7 +33,6 @@ const SyllabusAnalyzerCard = () => (
 
 const TestsSection = () => {
     const { tests, isLoaded } = useTests();
-    const [selectedTest, setSelectedTest] = React.useState<Test | null>(null);
 
     const upcomingTest = React.useMemo(() => {
         const now = new Date();
@@ -95,37 +93,11 @@ const TestsSection = () => {
     );
 };
 
-const LearnToday = () => {
-    const subjects = [
-        { name: 'Physics', icon: Atom, color: 'bg-red-500' },
-        { name: 'Chemistry', icon: FlaskConical, color: 'bg-orange-500' },
-        { name: 'Biology', icon: BrainCircuit, color: 'bg-blue-500' },
-    ]
-    return (
-        <Card className="shadow-md">
-            <CardContent className="p-4">
-                <h3 className="text-lg font-bold mb-4 text-center">What would you like to learn today?</h3>
-                <div className="flex justify-around">
-                    {subjects.map((subject) => (
-                        <div key={subject.name} className="flex flex-col items-center gap-2">
-                            <Button size="icon" className={cn("w-16 h-16 rounded-full text-white shadow-lg", subject.color)}>
-                                <subject.icon className="w-8 h-8" />
-                            </Button>
-                            <span className="text-sm font-medium">{subject.name}</span>
-                        </div>
-                    ))}
-                </div>
-            </CardContent>
-        </Card>
-    )
-};
-
 export function DashboardClient() {
   return (
     <div className="space-y-6">
       <SyllabusAnalyzerCard />
       <TestsSection />
-      <LearnToday />
     </div>
   );
 }

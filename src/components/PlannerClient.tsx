@@ -6,7 +6,7 @@ import { useTasks } from "@/hooks/use-tasks";
 import { Button } from "@/components/ui/button";
 import { TaskDialog } from "@/components/TaskDialog";
 import type { Task } from "@/types";
-import { Plus, Loader2, Edit, Trash2, Clock, BookOpen, CheckCircle, Circle } from "lucide-react";
+import { Plus, Loader2, Edit, Trash2, Clock, BookOpen, CheckCircle, Circle, Atom, FlaskConical, BrainCircuit } from "lucide-react";
 import { format, isToday, isFuture, formatDistanceToNow, parseISO } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import {
@@ -21,6 +21,33 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
+
+
+const LearnToday = () => {
+    const subjects = [
+        { name: 'Physics', icon: Atom, color: 'bg-red-500' },
+        { name: 'Chemistry', icon: FlaskConical, color: 'bg-orange-500' },
+        { name: 'Biology', icon: BrainCircuit, color: 'bg-blue-500' },
+    ]
+    return (
+        <Card className="shadow-md">
+            <CardContent className="p-4">
+                <h3 className="text-lg font-bold mb-4 text-center">What would you like to learn today?</h3>
+                <div className="flex justify-around">
+                    {subjects.map((subject) => (
+                        <div key={subject.name} className="flex flex-col items-center gap-2">
+                            <Button size="icon" className={cn("w-16 h-16 rounded-full text-white shadow-lg", subject.color)}>
+                                <subject.icon className="w-8 h-8" />
+                            </Button>
+                            <span className="text-sm font-medium">{subject.name}</span>
+                        </div>
+                    ))}
+                </div>
+            </CardContent>
+        </Card>
+    )
+};
+
 
 export function PlannerClient() {
   const { tasks, isLoaded, deleteTask, toggleTaskCompletion } = useTasks();
@@ -59,6 +86,7 @@ export function PlannerClient() {
 
   return (
     <div className="p-4 md:p-6 space-y-6">
+        <LearnToday />
       <div className="flex justify-end">
         <Button onClick={handleAddNewTask}>
           <Plus className="mr-2 h-4 w-4" /> Add New Task
