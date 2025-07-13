@@ -2,17 +2,18 @@
 
 import {
   analyzeSyllabus,
+  SyllabusAnalyzerInput,
   SyllabusAnalyzerOutput,
 } from "@/ai/flows/syllabus-analyzer";
 
 export async function getStudyTasksFromSyllabus(
-  syllabusText: string
+  input: SyllabusAnalyzerInput
 ): Promise<{ data: SyllabusAnalyzerOutput | null; error: string | null }> {
-  if (!syllabusText.trim()) {
-    return { data: { studyTasks: [] }, error: null };
+  if (!input.syllabusText?.trim() && !input.syllabusFileDataUri) {
+    return { data: { studyTasks: [] }, error: "No syllabus content provided." };
   }
   try {
-    const result = await analyzeSyllabus({ syllabusText });
+    const result = await analyzeSyllabus(input);
     return { data: result, error: null };
   } catch (error) {
     console.error("Error analyzing syllabus:", error);
