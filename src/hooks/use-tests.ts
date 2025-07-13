@@ -37,8 +37,10 @@ export const fetchTests = async (psid: string, force = false): Promise<Test[]> =
   try {
     const q = query(
       collection(db, "tests"),
-      where("psid", "==", psid),
-      orderBy("startDate")
+      where("psid", "==", psid)
+      // Removing orderBy to avoid index error while it's building.
+      // We will sort on the client.
+      // orderBy("startDate") 
     );
     const querySnapshot = await getDocs(q);
     const userTests = querySnapshot.docs.map((doc) => {
@@ -50,6 +52,9 @@ export const fetchTests = async (psid: string, force = false): Promise<Test[]> =
         endDate: (data.endDate as Timestamp).toDate().toISOString(),
       } as Test;
     });
+
+    // Sort tests by start date on the client side
+    userTests.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
 
     cachedTests = userTests;
     cachePsid = psid;
