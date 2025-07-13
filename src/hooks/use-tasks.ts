@@ -13,7 +13,6 @@ import {
   updateDoc,
   deleteDoc,
   doc,
-  orderBy,
   Timestamp,
 } from "firebase/firestore";
 import type { Task } from "@/types";
@@ -43,10 +42,11 @@ export const fetchTasks = async (psid: string, force = false): Promise<Task[]> =
   }
 
   try {
+    // Query without orderBy to avoid needing a composite index immediately.
+    // We will sort the results on the client-side.
     const q = query(
       collection(db, "tasks"),
-      where("psid", "==", psid),
-      orderBy("date", "asc")
+      where("psid", "==", psid)
     );
     const querySnapshot = await getDocs(q);
     const userTasks = querySnapshot.docs.map((doc) => {
@@ -57,6 +57,9 @@ export const fetchTasks = async (psid: string, force = false): Promise<Task[]> =
         date: (data.date as Timestamp).toDate().toISOString(),
       } as Task;
     });
+    
+    // Sort tasks by date on the client side
+    userTasks.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     
     // Update cache
     cachedTasks = userTasks;
