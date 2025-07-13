@@ -34,7 +34,7 @@ import { format, setHours, setMinutes, parseISO } from "date-fns";
 import { CalendarIcon, Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import { Calendar } from "./ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "./ui/command";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "./ui/command";
 
 const formSchema = z.object({
   subject: z.string().min(1, "Subject is required."),
@@ -58,6 +58,7 @@ export function TaskDialog({ isOpen, setIsOpen, task, initialData }: TaskDialogP
   const { syllabus, isLoaded: isSyllabusLoaded } = useSyllabus();
   const [suggestedTopics, setSuggestedTopics] = useState<string[]>([]);
   const [isSuggesting, startSuggesting] = useTransition();
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -98,22 +99,19 @@ export function TaskDialog({ isOpen, setIsOpen, task, initialData }: TaskDialogP
   }, [isOpen, task, initialData, form]);
 
   useEffect(() => {
-    const fetchSuggestions = async () => {
-      if (watchedSubject && isSyllabusLoaded && syllabus?.topics?.length) {
-        const { data } = await getTopicSuggestions({
-          subject: watchedSubject,
-          syllabusTopics: syllabus.topics,
-        });
-        if (data) {
-          setSuggestedTopics(data.suggestedTopics);
-        }
-      } else {
-        setSuggestedTopics([]);
+    if (!watchedSubject || !isSyllabusLoaded || !syllabus?.topics?.length) {
+      setSuggestedTopics([]);
+      return;
+    }
+
+    startSuggesting(async () => {
+      const { data } = await getTopicSuggestions({
+        subject: watchedSubject,
+        syllabusTopics: syllabus.topics,
+      });
+      if (data) {
+        setSuggestedTopics(data.suggestedTopics);
       }
-    };
-  
-    startSuggesting(() => {
-      fetchSuggestions();
     });
   }, [watchedSubject, isSyllabusLoaded, syllabus]);
 
@@ -169,7 +167,7 @@ export function TaskDialog({ isOpen, setIsOpen, task, initialData }: TaskDialogP
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Topic</FormLabel>
-                   <Popover>
+                   <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
                     <PopoverTrigger asChild>
                       <FormControl>
                         <Button
@@ -186,35 +184,35 @@ export function TaskDialog({ isOpen, setIsOpen, task, initialData }: TaskDialogP
                       </FormControl>
                     </PopoverTrigger>
                     <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                      <Command>
+                      <Command shouldFilter={false}>
                         <CommandInput
                           placeholder="Search or type topic..."
-                          onValueChange={(search) => {
-                             if (!suggestedTopics.includes(search)) {
-                                field.onChange(search);
-                             }
-                          }}
+                          value={field.value}
+                          onValueChange={field.onChange}
                          />
-                        <CommandEmpty>No topic found.</CommandEmpty>
-                        <CommandGroup>
-                          {suggestedTopics.map((topic) => (
-                            <CommandItem
-                              value={topic}
-                              key={topic}
-                              onSelect={() => {
-                                form.setValue("topic", topic)
-                              }}
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  topic === field.value ? "opacity-100" : "opacity-0"
-                                )}
-                              />
-                              {topic}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
+                        <CommandList>
+                          <CommandEmpty>No topic found.</CommandEmpty>
+                          <CommandGroup>
+                            {suggestedTopics.map((topic) => (
+                              <CommandItem
+                                value={topic}
+                                key={topic}
+                                onSelect={() => {
+                                  form.setValue("topic", topic)
+                                  setIsPopoverOpen(false)
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    topic === field.value ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                {topic}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
                       </Command>
                     </PopoverContent>
                   </Popover>
