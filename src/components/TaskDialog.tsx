@@ -74,6 +74,7 @@ export function TaskDialog({ isOpen, setIsOpen, task, initialData }: TaskDialogP
   });
   
   const watchedSubject = useWatch({ control: form.control, name: "subject" });
+  const watchedTopic = useWatch({ control: form.control, name: "topic" });
 
   useEffect(() => {
     if (isOpen) {
@@ -194,23 +195,26 @@ export function TaskDialog({ isOpen, setIsOpen, task, initialData }: TaskDialogP
                           <CommandEmpty>No topic found.</CommandEmpty>
                           <CommandGroup>
                             {suggestedTopics.map((topic) => (
-                              <CommandItem
-                                value={topic}
+                               <div
                                 key={topic}
-                                onPointerDown={(e) => {
-                                  e.preventDefault();
-                                  form.setValue("topic", topic)
-                                  setIsPopoverOpen(false)
+                                className="cursor-pointer"
+                                onClick={() => {
+                                  form.setValue("topic", topic);
+                                  setIsPopoverOpen(false);
                                 }}
                               >
-                                <Check
-                                  className={cn(
-                                    "mr-2 h-4 w-4",
-                                    topic === field.value ? "opacity-100" : "opacity-0"
-                                  )}
-                                />
-                                {topic}
-                              </CommandItem>
+                                <CommandItem>
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      topic === field.value
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                    )}
+                                  />
+                                  {topic}
+                                </CommandItem>
+                              </div>
                             ))}
                           </CommandGroup>
                         </CommandList>
