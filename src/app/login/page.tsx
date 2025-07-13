@@ -13,10 +13,7 @@ import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/firebase';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle, Eye, Loader2 } from 'lucide-react';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 import Link from 'next/link';
-import { cn } from '@/lib/utils';
 
 const formSchema = z.object({
   psid: z.string().min(1, { message: "Please enter a valid PSID/Mobile No." }),
@@ -149,12 +146,6 @@ function LoginPageContent() {
                     </FormItem>
                   )}
                 />
-
-                <div className="flex items-center justify-center space-x-4">
-                    <Label htmlFor="role-switch" className={cn("text-muted-foreground", true ? "text-foreground" : "")}>Student</Label>
-                    <Switch id="role-switch" defaultChecked />
-                    <Label htmlFor="role-switch" className={cn("text-muted-foreground", false ? "text-foreground" : "")}>Parent</Label>
-                </div>
                 
                 {error && (
                   <Alert variant="destructive" className="text-xs">
