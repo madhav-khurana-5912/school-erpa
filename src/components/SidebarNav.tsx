@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
 
 const menuItems = [
   { href: "/", label: "Home", icon: Home },
-  { href: "/timetable", label: "Timetable", icon: CalendarDays },
+  { href: "/planner", label: "Planner", icon: CalendarDays },
   { href: "/test-scores", label: "Test Scores", icon: ClipboardCheck },
   { href: "/tests", label: "Tests", icon: FileText },
   { href: "/more", label: "More", icon: MoreHorizontal },

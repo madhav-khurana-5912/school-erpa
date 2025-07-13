@@ -9,7 +9,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 const menuItems = [
   { href: "/", label: "Home", icon: Home },
-  { href: "/timetable", label: "Timetable", icon: CalendarDays },
+  { href: "/planner", label: "Planner", icon: CalendarDays },
   { href: "/test-scores", label: "Test Scores", icon: ClipboardCheck },
   { href: "/tests", label: "Tests", icon: FileText },
   { href: "/more", label: "More", icon: MoreHorizontal },
@@ -25,7 +25,7 @@ export function BottomNavBar() {
 
   // Create placeholder pages for new nav items if they don't exist
   // This is a simple example. In a real app, you would create actual pages.
-  const allRoutes = ["/", "/import", "/login", "/timetable", "/test-scores", "/tests", "/more"];
+  const allRoutes = ["/", "/import", "/login", "/planner", "/test-scores", "/tests", "/more"];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 w-full md:hidden">
