@@ -10,7 +10,6 @@ import { Calendar, MapPin, ChevronRight, Atom, FlaskConical, BrainCircuit, Wand2
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import type { Test } from "@/types";
-import { TestDetailsDialog } from "./TestDetailsDialog";
 
 const SyllabusAnalyzerCard = () => (
     <Card className="shadow-md bg-primary/10 border-primary/20">
@@ -75,8 +74,10 @@ const TestsSection = () => {
                                 </div>
                             </div>
                             <div className="mt-4">
-                                <Button variant="link" onClick={() => setSelectedTest(upcomingTest)} className="text-sm font-semibold text-blue-600 p-0 h-auto">
-                                    View Details & Syllabus
+                                <Button variant="link" asChild className="text-sm font-semibold text-blue-600 p-0 h-auto">
+                                    <Link href={`/tests/${upcomingTest.id}`}>
+                                        View Details & Syllabus
+                                    </Link>
                                 </Button>
                             </div>
                         </>
@@ -90,13 +91,6 @@ const TestsSection = () => {
                     )}
                 </CardContent>
             </Card>
-            {selectedTest && (
-                <TestDetailsDialog
-                    isOpen={!!selectedTest}
-                    setIsOpen={(isOpen) => !isOpen && setSelectedTest(null)}
-                    test={selectedTest}
-                />
-            )}
         </div>
     );
 };

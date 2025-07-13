@@ -11,7 +11,6 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Test } from "@/types";
-import { TestDetailsDialog } from "./TestDetailsDialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,7 +25,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 
 
-const TestList = ({ tests, onTestSelect }: { tests: Test[], onTestSelect: (test: Test) => void }) => {
+const TestList = ({ tests }: { tests: Test[] }) => {
   if (tests.length === 0) {
     return (
       <div className="text-center text-muted-foreground py-10 border-2 border-dashed rounded-lg mt-4">
@@ -60,8 +59,10 @@ const TestList = ({ tests, onTestSelect }: { tests: Test[], onTestSelect: (test:
                 </div>
               </div>
               <div className="mt-4">
-                 <Button variant="link" onClick={() => onTestSelect(test)} className="text-sm font-semibold text-blue-600 p-0 h-auto">
-                    View Details & Syllabus
+                 <Button variant="link" asChild className="text-sm font-semibold text-blue-600 p-0 h-auto">
+                    <Link href={`/tests/${test.id}`}>
+                        View Details & Syllabus
+                    </Link>
                  </Button>
               </div>
             </CardContent>
@@ -75,7 +76,6 @@ const TestList = ({ tests, onTestSelect }: { tests: Test[], onTestSelect: (test:
 
 export function TestsClient() {
   const { tests, isLoaded, clearAllTests } = useTests();
-  const [selectedTest, setSelectedTest] = React.useState<Test | null>(null);
   const [isClearing, setIsClearing] = React.useState(false);
   const { toast } = useToast();
 
@@ -158,19 +158,12 @@ export function TestsClient() {
             <TabsTrigger value="completed">Completed ({completedTests.length})</TabsTrigger>
         </TabsList>
         <TabsContent value="upcoming">
-            <TestList tests={upcomingTests} onTestSelect={setSelectedTest} />
+            <TestList tests={upcomingTests} />
         </TabsContent>
         <TabsContent value="completed">
-            <TestList tests={completedTests} onTestSelect={setSelectedTest} />
+            <TestList tests={completedTests} />
         </TabsContent>
         </Tabs>
-         {selectedTest && (
-            <TestDetailsDialog
-                isOpen={!!selectedTest}
-                setIsOpen={(isOpen) => !isOpen && setSelectedTest(null)}
-                test={selectedTest}
-            />
-        )}
     </>
   );
 }
