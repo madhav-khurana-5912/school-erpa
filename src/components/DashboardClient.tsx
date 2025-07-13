@@ -11,26 +11,6 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 
-const AttendanceCard = () => (
-    <Card className="shadow-md">
-      <CardContent className="p-4 flex items-center justify-between space-x-4">
-        <div className="flex flex-col items-center justify-center bg-blue-100 text-blue-800 rounded-lg p-2 px-4">
-          <span className="text-lg font-bold">{format(new Date(), "dd")}</span>
-          <span className="text-sm">{format(new Date(), "MMM")}</span>
-          <span className="text-xs text-muted-foreground">{format(new Date(), "E")}</span>
-        </div>
-        <div className="text-center">
-          <p className="text-sm text-muted-foreground">First Punch</p>
-          <p className="font-semibold">08:10 am</p>
-        </div>
-        <div className="text-center">
-          <p className="text-sm text-muted-foreground">Last Punch</p>
-          <p className="font-semibold">01:46 pm</p>
-        </div>
-      </CardContent>
-    </Card>
-);
-
 const SyllabusAnalyzerCard = () => (
     <Card className="shadow-md bg-primary/10 border-primary/20">
         <CardHeader className="pb-4">
@@ -186,7 +166,6 @@ const LearnToday = () => {
 export function DashboardClient() {
   return (
     <div className="space-y-6">
-      <AttendanceCard />
       <SyllabusAnalyzerCard />
       <FeedbackBanner />
       <TestsSection />
