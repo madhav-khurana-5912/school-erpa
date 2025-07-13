@@ -333,5 +333,3 @@ export function TaskDialog({ isOpen, setIsOpen, task, initialData }: TaskDialogP
     </Dialog>
   );
 }
-
-    
