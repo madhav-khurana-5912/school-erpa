@@ -62,7 +62,6 @@ export function TestDetailsClient({ testId }: { testId: string }) {
                    <DetailCard label="Test date" value={`${format(parseISO(test.startDate), "dd MMM''yy")} - ${format(parseISO(test.endDate), "dd MMM''yy")}`} />
                    <DetailCard label="Test duration" value="-" />
                    <DetailCard label="Result date" value={format(parseISO(test.endDate), "dd MMM''yy")} />
-                   <DetailCard label="Format" value="Objective" />
                    <DetailCard label="No. of questions" value="-" />
                    <DetailCard label="Max marks" value="-" />
                 </div>
