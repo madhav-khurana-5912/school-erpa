@@ -12,7 +12,11 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const TestAnalyzerInputSchema = z.object({
-  datesheetText: z.string().describe('The text content of the test datesheet.'),
+  datesheetPhotoDataUri: z
+    .string()
+    .describe(
+      "A photo of the datesheet, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+    ),
 });
 export type TestAnalyzerInput = z.infer<typeof TestAnalyzerInputSchema>;
 
@@ -35,9 +39,9 @@ const prompt = ai.definePrompt({
   name: 'datesheetAnalyzerPrompt',
   input: {schema: TestAnalyzerInputSchema},
   output: {schema: TestAnalyzerOutputSchema},
-  prompt: `You are an AI assistant that extracts structured test data from a raw text datesheet. Analyze the following datesheet and extract all tests. Today's date is ${new Date().toDateString()}.
+  prompt: `You are an AI assistant that extracts structured test data from an image of a test datesheet. Analyze the following datesheet and extract all tests. Today's date is ${new Date().toDateString()}.
 
-  Datesheet: {{{datesheetText}}}
+  Datesheet Image: {{media url=datesheetPhotoDataUri}}
   `,
 });
 

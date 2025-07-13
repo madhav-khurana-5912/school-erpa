@@ -1,11 +1,10 @@
 
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, ChangeEvent } from "react";
 import { getTestsFromDatesheet } from "@/lib/test-actions";
 import { useTests } from "@/hooks/use-tests";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
   CardContent,
@@ -17,34 +16,68 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import type { Test } from "@/types";
 import { Skeleton } from "./ui/skeleton";
-import { Wand2, Calendar, Plus, Save } from "lucide-react";
+import { Wand2, Calendar, Save, Upload, Image as ImageIcon } from "lucide-react";
 import { format, parseISO } from "date-fns";
+import Image from "next/image";
 
 type ExtractedTest = Omit<Test, "id" | "psid">;
 
 export function DatesheetImporter() {
-  const [datesheetText, setDatesheetText] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [extractedTests, setExtractedTests] = useState<ExtractedTest[]>([]);
   const [isAnalyzing, startAnalyzing] = useTransition();
   const [isSaving, startSaving] = useTransition();
   const { addAllTests } = useTests();
   const { toast } = useToast();
 
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const fileToDataUri = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+  }
+
   const handleAnalyze = () => {
+    if (!imageFile) return;
+
     startAnalyzing(async () => {
       setExtractedTests([]);
-      const { data, error } = await getTestsFromDatesheet(datesheetText);
-      if (error) {
+      try {
+        const datesheetPhotoDataUri = await fileToDataUri(imageFile);
+        const { data, error } = await getTestsFromDatesheet(datesheetPhotoDataUri);
+        if (error) {
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: error,
+          });
+        } else if (data) {
+          setExtractedTests(data.tests);
+          toast({
+            title: "Datesheet Analyzed",
+            description: `We've extracted ${data.tests.length} tests. Review and save them.`,
+          });
+        }
+      } catch (e) {
         toast({
-          variant: "destructive",
-          title: "Error",
-          description: error,
-        });
-      } else if (data) {
-        setExtractedTests(data.tests);
-        toast({
-          title: "Datesheet Analyzed",
-          description: `We've extracted ${data.tests.length} tests. Review and save them.`,
+            variant: "destructive",
+            title: "Error",
+            description: "Could not read the image file. Please try again.",
         });
       }
     });
@@ -59,6 +92,8 @@ export function DatesheetImporter() {
           description: "All extracted tests have been saved to your planner.",
         });
         setExtractedTests([]);
+        setImageFile(null);
+        setImagePreview(null);
       } catch (error) {
         toast({
           variant: "destructive",
@@ -75,20 +110,29 @@ export function DatesheetImporter() {
         <CardHeader>
           <CardTitle>Analyze Your Datesheet</CardTitle>
           <CardDescription>
-            Paste your test schedule below. Our AI will extract all the tests and their dates for you.
+            Upload a picture of your test schedule. Our AI will extract all the tests and their dates for you.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Textarea
-            value={datesheetText}
-            onChange={(e) => setDatesheetText(e.target.value)}
-            placeholder="Paste your test datesheet text here..."
-            rows={15}
-            className="w-full"
-          />
+            <div className="space-y-4">
+                <label htmlFor="datesheet-upload" className="block w-full cursor-pointer rounded-lg border-2 border-dashed border-muted-foreground/30 p-10 text-center hover:bg-muted/50">
+                    <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                        <Upload className="h-8 w-8" />
+                        <span className="font-medium">{imageFile ? "Change image" : "Click to upload an image"}</span>
+                        <span className="text-xs">PNG, JPG, or GIF</span>
+                    </div>
+                </label>
+                <input id="datesheet-upload" type="file" accept="image/*" className="sr-only" onChange={handleFileChange} />
+                
+                {imagePreview && (
+                    <div className="relative aspect-video w-full overflow-hidden rounded-md border">
+                        <Image src={imagePreview} alt="Datesheet preview" layout="fill" objectFit="contain" />
+                    </div>
+                )}
+            </div>
         </CardContent>
         <CardFooter>
-          <Button onClick={handleAnalyze} disabled={isAnalyzing || !datesheetText}>
+          <Button onClick={handleAnalyze} disabled={isAnalyzing || !imageFile}>
             {isAnalyzing ? "Analyzing..." : <> <Wand2 className="mr-2 h-4 w-4" /> Analyze Datesheet </>}
           </Button>
         </CardFooter>
@@ -121,9 +165,10 @@ export function DatesheetImporter() {
               ))}
             </ul>
           ) : (
-            <div className="text-center text-muted-foreground py-10">
+            <div className="text-center text-muted-foreground py-10 flex flex-col items-center justify-center">
+              <ImageIcon className="h-12 w-12 text-muted-foreground/50 mb-4" />
               <p>No tests extracted yet.</p>
-              <p className="text-sm">Analyze a datesheet to get started.</p>
+              <p className="text-sm">Upload a datesheet image to get started.</p>
             </div>
           )}
         </CardContent>

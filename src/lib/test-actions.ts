@@ -7,16 +7,16 @@ import {
 } from "@/ai/flows/test-analyzer";
 
 export async function getTestsFromDatesheet(
-  datesheetText: string
+  datesheetPhotoDataUri: string
 ): Promise<{ data: TestAnalyzerOutput | null; error: string | null }> {
-  if (!datesheetText.trim()) {
-    return { data: { tests: [] }, error: null };
+  if (!datesheetPhotoDataUri) {
+    return { data: { tests: [] }, error: "No image provided." };
   }
   try {
-    const result = await analyzeDatesheet({ datesheetText });
+    const result = await analyzeDatesheet({ datesheetPhotoDataUri });
     return { data: result, error: null };
   } catch (error) {
     console.error("Error analyzing datesheet:", error);
-    return { data: null, error: "Failed to analyze datesheet. Please try again." };
+    return { data: null, error: "Failed to analyze datesheet image. Please try again." };
   }
 }
