@@ -40,15 +40,26 @@ const prompt = ai.definePrompt({
   name: 'datesheetAnalyzerPrompt',
   input: {schema: TestAnalyzerInputSchema},
   output: {schema: TestAnalyzerOutputSchema},
-  prompt: `You are an AI assistant that extracts structured test data from one or more images of a test datesheet. Analyze the following datesheet images and extract all tests, their start and end dates, and their syllabus if provided. Today's date is ${new Date().toDateString()}.
+  prompt: `You are an expert AI assistant tasked with accurately extracting structured data from images of a test datesheet. Your goal is to identify all tests, their dates, and their complete syllabus. Today's date is ${new Date().toDateString()}.
 
-IMPORTANT: Some tests, like a "Unit Test" (UT), may have multiple subjects listed on the same date. If you see multiple subjects for the same test on the same date, you MUST group them into a single test event. The 'testName' should be the name of the test event (e.g., "Unit Test 1"), and the 'syllabus' should be a combined list of all subjects for that test (e.g., "Social Science, English, MAT"). Do NOT create separate test entries for each subject of the same test event.
+**CRITICAL INSTRUCTIONS:**
 
-  Datesheet Images:
-  {{#each datesheetPhotoDataUris}}
-  {{media url=this}}
-  {{/each}}
-  `,
+1.  **Group Subjects into a Single Test Event:** Many datesheets list multiple subjects for the same overall test (e.g., "Unit Test 1", "Term End Exam"). You MUST identify these as a single test.
+    *   **Correct Behavior:** If you see "Unit Test 1" with subjects "Physics", "Chemistry", and "Maths" listed, create ONE entry with \`testName: "Unit Test 1"\`.
+    *   **Incorrect Behavior:** Do NOT create separate entries like "Unit Test 1 - Physics".
+
+2.  **Combine All Syllabus Topics:** For a single test event, you MUST combine all associated subjects/topics into a single \`syllabus\` string.
+    *   **Example:** If the datesheet shows "Social Science, English, MAT" for "Unit Test 1", the syllabus field for that single test entry should be "Social Science, English, MAT".
+
+3.  **Accurate Date Extraction:** Extract the start and end dates for each test event and format them as YYYY-MM-DD. If a test is on a single day, the start and end dates will be the same.
+
+**Analyze the following datesheet images and extract the data according to these rules:**
+
+Datesheet Images:
+{{#each datesheetPhotoDataUris}}
+{{media url=this}}
+{{/each}}
+`,
 });
 
 const analyzeDatesheetFlow = ai.defineFlow(

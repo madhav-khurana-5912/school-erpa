@@ -4,7 +4,7 @@ import { PlannerClient } from "@/components/PlannerClient";
 export default function PlannerPage() {
   return (
     <div className="flex flex-col h-full">
-      <Header title="Study Planner" />
+      <Header title="My Scheduled Tasks" />
       <div className="flex-1 overflow-y-auto">
         <PlannerClient />
       </div>

@@ -40,16 +40,24 @@ const prompt = ai.definePrompt({
   name: 'syllabusAnalyzerPrompt',
   input: {schema: SyllabusAnalyzerInputSchema},
   output: {schema: SyllabusAnalyzerOutputSchema},
-  prompt: `You are an AI study assistant that helps students create a study plan. Your goal is to generate a list of study tasks with recommended durations based on the provided syllabus.
+  prompt: `You are an AI study assistant. Your goal is to generate a list of distinct study topics with recommended study durations based on the provided syllabus.
 
-  Analyze the following syllabus content.
-  {{#if syllabusText}}
-  Syllabus Text: {{{syllabusText}}}
-  {{/if}}
-  {{#if syllabusFileDataUri}}
-  Syllabus Document: {{media url=syllabusFileDataUri}}
-  {{/if}}
-  `,
+Analyze the following syllabus content and break it down into a comprehensive list of individual topics. For each topic, suggest a reasonable study duration in minutes.
+
+**Instructions:**
+1.  **Identify Core Topics:** Extract all individual subjects, chapters, and topics mentioned.
+2.  **Be Granular:** Break down broad chapters into smaller, specific topics if possible. For example, instead of just "Algebra", extract "Linear Equations", "Quadratic Equations", etc.
+3.  **Estimate Duration:** For each granular topic, estimate a reasonable amount of time (in minutes) a student might need to study it.
+4.  **Create Task List:** Format the output as a list of study tasks.
+
+**Input Syllabus:**
+{{#if syllabusText}}
+Syllabus Text: {{{syllabusText}}}
+{{/if}}
+{{#if syllabusFileDataUri}}
+Syllabus Document: {{media url=syllabusFileDataUri}}
+{{/if}}
+`,
 });
 
 const analyzeSyllabusFlow = ai.defineFlow(

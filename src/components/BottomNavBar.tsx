@@ -3,13 +3,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, CalendarDays, FileUp, FileText, MoreHorizontal } from "lucide-react";
+import { Home, CalendarDays, FileUp, FileText, MoreHorizontal, ListTodo } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const menuItems = [
   { href: "/", label: "Home", icon: Home },
-  { href: "/planner", label: "Planner", icon: CalendarDays },
+  { href: "/planner", label: "My Tasks", icon: ListTodo },
   { href: "/import", label: "Import", icon: FileUp },
   { href: "/tests", label: "Tests", icon: FileText },
   { href: "/more", label: "More", icon: MoreHorizontal },
@@ -27,7 +27,8 @@ export function BottomNavBar() {
     <nav className="fixed bottom-0 left-0 right-0 z-50 w-full md:hidden">
       <div className="flex h-16 items-stretch justify-around border-t bg-background/95 backdrop-blur-sm">
         {menuItems.map((item) => {
-          const isActive = pathname === item.href;
+          const isActive = pathname === item.href || (item.href === "/planner" && pathname.startsWith("/planner"));
+          const Icon = item.icon;
           return (
             <Link
               key={item.href}
@@ -42,7 +43,7 @@ export function BottomNavBar() {
               {isActive && (
                 <span className="absolute top-0 h-0.5 w-1/2 rounded-b-full bg-primary transition-all duration-300"></span>
               )}
-              <item.icon className="h-5 w-5" />
+              <Icon className="h-5 w-5" />
               <span>{item.label}</span>
             </Link>
           );
