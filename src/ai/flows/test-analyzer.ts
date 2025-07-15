@@ -48,10 +48,16 @@ const prompt = ai.definePrompt({
     *   **Correct Behavior:** If you see "Unit Test 1" with subjects "Physics", "Chemistry", and "Maths" listed, create ONE entry with \`testName: "Unit Test 1"\`.
     *   **Incorrect Behavior:** Do NOT create separate entries like "Unit Test 1 - Physics".
 
-2.  **Combine All Syllabus Topics:** For a single test event, you MUST combine all associated subjects/topics into a single \`syllabus\` string.
-    *   **Example:** If the datesheet shows "Social Science, English, MAT" for "Unit Test 1", the syllabus field for that single test entry should be "Social Science, English, MAT".
+2.  **Extract and Combine All Syllabus Topics:** For a single test event, you MUST combine all associated subjects and their specific syllabus topics into a single \`syllabus\` string.
+    *   **Look for a "Syllabus" column or section.** Many datesheets list specific chapters or topics.
+    *   **Example:** If the datesheet shows:
+        *   Physics: Chapters 1-3
+        *   Chemistry: Organic Compounds
+        *   MAT: Number Series
+        The syllabus field for that single test entry should be "Physics: Chapters 1-3, Chemistry: Organic Compounds, MAT: Number Series".
+    *   **If no specific topics are listed, use the subject name as the syllabus.** For example, if it just says "English", the syllabus contribution is just "English".
 
-3.  **Accurate Date Extraction:** Extract the start and end dates for each test event and format them as YYYY-MM-DD. If a test is on a single day, the start and end dates will be the same.
+3.  **Accurate Date Extraction:** Extract the start and end dates for each test event and format them as YYYY-MM-DD. If a test is on a single day, the start and end dates will be the same. The start date is the earliest date for any subject in the test group, and the end date is the latest.
 
 **Analyze the following datesheet images and extract the data according to these rules:**
 
