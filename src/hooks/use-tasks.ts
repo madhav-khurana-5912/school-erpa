@@ -1,4 +1,3 @@
-
 // src/hooks/use-tasks.ts
 "use client";
 
@@ -15,99 +14,54 @@ import {
   deleteDoc,
   doc,
   Timestamp,
+  onSnapshot,
 } from "firebase/firestore";
 import type { Task } from "@/types";
-
-// Keep a local cache of tasks to avoid re-fetching on component re-renders.
-let cachedTasks: Task[] = [];
-let cachePsid: string | null = null;
-let lastFetchTime: number = 0;
-const CACHE_DURATION = 1000 * 5; // 5 seconds
-
-// Export the fetch function to be used outside the hook for pre-fetching.
-export const fetchTasks = async (psid: string, force = false): Promise<Task[]> => {
-  const now = Date.now();
-  if (
-    !force &&
-    cachePsid === psid &&
-    cachedTasks.length > 0 &&
-    now - lastFetchTime < CACHE_DURATION
-  ) {
-    return cachedTasks;
-  }
-  
-  if (!db) {
-    console.error("Firestore not initialized.");
-    cachedTasks = [];
-    return [];
-  }
-
-  try {
-    // Query without orderBy to avoid needing a composite index immediately.
-    // We will sort the results on the client-side.
-    const q = query(
-      collection(db, "tasks"),
-      where("psid", "==", psid)
-    );
-    const querySnapshot = await getDocs(q);
-    const userTasks = querySnapshot.docs.map((doc) => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        ...data,
-        date: (data.date as Timestamp).toDate().toISOString(),
-      } as Task;
-    });
-    
-    // Sort tasks by date on the client side
-    userTasks.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    
-    // Update cache
-    cachedTasks = userTasks;
-    cachePsid = psid;
-    lastFetchTime = now;
-    
-    return userTasks;
-  } catch (error) {
-    console.error("Error fetching tasks:", error);
-    cachedTasks = [];
-    return [];
-  }
-};
-
 
 export function useTasks() {
   const { psid, loading: authLoading } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  const getTasks = useCallback(async (currentPsid: string) => {
-    if (!db) {
-        setTasks([]);
-        setIsLoaded(true);
-        return;
-    };
-    setIsLoaded(false);
-    const userTasks = await fetchTasks(currentPsid, true); // Force fetch for reliability
-    setTasks(userTasks);
-    setIsLoaded(true);
-  }, []);
-
   useEffect(() => {
-    // Only proceed if auth has finished loading
-    if (!authLoading) {
-      if (psid) {
-        // If there's a psid, fetch their tasks
-        getTasks(psid);
-      } else {
-        // If there is no psid (user logged out), clear tasks and set as loaded
+    if (authLoading) return;
+
+    if (!psid || !db) {
+      setTasks([]);
+      setIsLoaded(true);
+      return;
+    }
+
+    setIsLoaded(false);
+    const q = query(collection(db, "tasks"), where("psid", "==", psid));
+
+    const unsubscribe = onSnapshot(
+      q,
+      (querySnapshot) => {
+        const userTasks = querySnapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            ...data,
+            date: (data.date as Timestamp).toDate().toISOString(),
+          } as Task;
+        });
+
+        // Sort tasks by date on the client side
+        userTasks.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        setTasks(userTasks);
+        setIsLoaded(true);
+      },
+      (error) => {
+        console.error("Error fetching tasks with snapshot:", error);
         setTasks([]);
-        cachedTasks = [];
-        cachePsid = null;
         setIsLoaded(true);
       }
-    }
-  }, [psid, authLoading, getTasks]);
+    );
+
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
+  }, [psid, authLoading]);
 
   const addTask = useCallback(
     async (taskData: Omit<Task, "id" | "completed" | "psid">) => {
@@ -123,12 +77,12 @@ export function useTasks() {
             dataToAdd.activityType = "Learn Concept"; // Default value
         }
         await addDoc(collection(db, "tasks"), dataToAdd);
-        await getTasks(psid); // Re-fetch after adding
+        // No need to re-fetch, onSnapshot will handle it
       } catch (error) {
         console.error("Error adding task: ", error);
       }
     },
-    [psid, getTasks]
+    [psid]
   );
 
   const updateTask = useCallback(
@@ -144,12 +98,11 @@ export function useTasks() {
             dataToUpdate.activityType = "Learn Concept";
         }
         await updateDoc(doc(db, "tasks", id), dataToUpdate);
-        await getTasks(psid); // Re-fetch after updating
       } catch (error) {
         console.error("Error updating task: ", error);
       }
     },
-    [psid, getTasks]
+    [psid]
   );
 
   const deleteTask = useCallback(
@@ -157,12 +110,11 @@ export function useTasks() {
       if (!psid || !db) return;
       try {
         await deleteDoc(doc(db, "tasks", taskId));
-        await getTasks(psid); // Re-fetch after deleting
       } catch (error) {
         console.error("Error deleting task: ", error);
       }
     },
-    [psid, getTasks]
+    [psid]
   );
 
   const toggleTaskCompletion = useCallback(
@@ -176,12 +128,11 @@ export function useTasks() {
         await updateDoc(doc(db, "tasks", taskId), {
           completed: !taskToToggle.completed,
         });
-        await getTasks(psid); // Re-fetch after toggling
       } catch (error) {
         console.error("Error toggling task completion: ", error);
       }
     },
-    [psid, getTasks, tasks]
+    [psid, tasks]
   );
 
   return { tasks, isLoaded, addTask, updateTask, deleteTask, toggleTaskCompletion };
