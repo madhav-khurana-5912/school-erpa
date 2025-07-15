@@ -26,7 +26,14 @@ const TestsSection = () => {
 
     const upcomingTest = React.useMemo(() => {
         const now = new Date();
-        return tests.find(test => parseISO(test.endDate) >= now);
+        // Filter for tests that haven't ended yet and get the first one (which will be the soonest)
+        const upcomingTests = tests.filter(test => {
+            const endDate = parseISO(test.endDate);
+            // Set time to the end of the day for comparison
+            endDate.setHours(23, 59, 59, 999);
+            return endDate >= now;
+        });
+        return upcomingTests[0] || null;
     }, [tests]);
 
     return (
@@ -90,6 +97,7 @@ const TasksSection = () => {
         return tasks
             .filter(task => {
                 const taskDate = parseISO(task.date);
+                // A task is upcoming if it's not completed and is for today or any day in the future.
                 return !task.completed && (isToday(taskDate) || isFuture(taskDate));
             })
             .slice(0, 3); // Show up to 3 upcoming tasks
