@@ -2,7 +2,7 @@
 "use client";
 
 import * as React from "react";
-import { format, parseISO, isFuture, isToday } from "date-fns";
+import { format, parseISO, isFuture, isToday, startOfDay } from "date-fns";
 import { useTests } from "@/hooks/use-tests";
 import { useTasks } from "@/hooks/use-tasks";
 import { Button } from "@/components/ui/button";
@@ -25,13 +25,12 @@ const TestsSection = () => {
     const { tests, isLoaded } = useTests();
 
     const upcomingTest = React.useMemo(() => {
-        const now = new Date();
-        // Filter for tests that haven't ended yet and get the first one (which will be the soonest)
+        const today = startOfDay(new Date());
+        // Filter for tests that haven't ended yet.
+        // Since tests are sorted by date, the first one in this filtered list is the next one.
         const upcomingTests = tests.filter(test => {
-            const endDate = parseISO(test.endDate);
-            // Set time to the end of the day for comparison
-            endDate.setHours(23, 59, 59, 999);
-            return endDate >= now;
+            const testEndDate = startOfDay(parseISO(test.endDate));
+            return testEndDate >= today;
         });
         return upcomingTests[0] || null;
     }, [tests]);
