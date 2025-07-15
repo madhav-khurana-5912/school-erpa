@@ -12,7 +12,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/firebase';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertTriangle, Eye, Loader2 } from 'lucide-react';
+import { AlertTriangle, Eye, Loader2, School } from 'lucide-react';
 import Link from 'next/link';
 
 const formSchema = z.object({
@@ -20,22 +20,12 @@ const formSchema = z.object({
   password: z.string().min(6, { message: "Password must be at least 6 characters." }),
 });
 
-const AakashLogo = () => (
+const SchoolErpLogo = () => (
     <div className="flex flex-col items-center mb-6">
-        <svg width="150" height="50" viewBox="0 0 150 50" className="text-blue-600" xmlns="http://www.w3.org/2000/svg">
-            {/* Circle with 'A' */}
-            <circle cx="75" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="1.5"/>
-            <path d="M72 15L75 9L78 15" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M73.5 13H76.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-            
-            {/* Aakash Text */}
-            <text x="75" y="38" fontFamily="Arial, sans-serif" fontSize="18" fontWeight="bold" fill="#00A9E0" textAnchor="middle">Aakash</text>
-            
-            {/* Subtitle */}
-            <text x="75" y="48" fontFamily="Arial, sans-serif" fontSize="6" fill="#E53935" textAnchor="middle">
-                Medical | IIT-JEE | Foundations
-            </text>
-        </svg>
+        <div className="bg-blue-600 text-white rounded-full p-3 mb-2">
+            <School className="h-10 w-10" />
+        </div>
+        <h1 className="text-2xl font-bold text-gray-800">School Erp</h1>
     </div>
 );
 
@@ -90,7 +80,7 @@ function LoginPageContent() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-white">
       <div className="w-full max-w-sm p-8 space-y-6">
-        <AakashLogo />
+        <SchoolErpLogo />
 
         <div className="text-left">
           <h1 className="text-2xl font-bold">{isSignUp ? 'Create an Account' : 'Login to your account'}</h1>
@@ -154,7 +144,7 @@ function LoginPageContent() {
                   </Alert>
                 )}
 
-                <Button type="submit" disabled={loading} className="w-full bg-gray-200 text-gray-500 hover:bg-gray-300">
+                <Button type="submit" disabled={loading} className="w-full bg-blue-600 text-white hover:bg-blue-700">
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   {isSignUp ? 'Sign Up' : 'Login'}
                 </Button>

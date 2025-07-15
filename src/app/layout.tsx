@@ -19,16 +19,16 @@ const roboto = Roboto({
 
 export const metadata: Metadata = {
   title: {
-    default: 'myAakash App - Your Personal Study Planner',
-    template: '%s | myAakash App',
+    default: 'School Erp - Your Personal Study Planner',
+    template: '%s | School Erp',
   },
   description: 'A functional and intelligent study planner app that helps you organize your study schedule, analyze your syllabus with AI, and stay on track with your academic goals.',
-  metadataBase: new URL('https://myaakash-app.com'), // Replace with your actual domain
+  metadataBase: new URL('https://school-erp.com'), // Replace with your actual domain
   openGraph: {
-    title: 'myAakash App - Your Personal Study Planner',
+    title: 'School Erp - Your Personal Study Planner',
     description: 'Organize your study schedule and analyze your syllabus with AI.',
-    url: 'https://myaakash-app.com', // Replace with your actual domain
-    siteName: 'myAakash App',
+    url: 'https://school-erp.com', // Replace with your actual domain
+    siteName: 'School Erp',
     images: [
       {
         url: '/og-image.png', // Replace with a path to your Open Graph image
