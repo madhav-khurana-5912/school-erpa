@@ -10,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { addDays, format, parseISO } from 'date-fns';
 
 const TestAnalyzerInputSchema = z.object({
   datesheetPhotoDataUris: z
@@ -107,6 +108,27 @@ const analyzeDatesheetFlow = ai.defineFlow(
     if (!output || !output.tests) {
         return { tests: [] };
     }
-    return output;
+    
+    // Add 2 days to both start and end dates
+    const adjustedTests = output.tests.map(test => {
+        try {
+            const originalStartDate = parseISO(test.startDate);
+            const originalEndDate = parseISO(test.endDate);
+
+            const adjustedStartDate = addDays(originalStartDate, 2);
+            const adjustedEndDate = addDays(originalEndDate, 2);
+
+            return {
+                ...test,
+                startDate: format(adjustedStartDate, 'yyyy-MM-dd'),
+                endDate: format(adjustedEndDate, 'yyyy-MM-dd'),
+            };
+        } catch (e) {
+            console.error(`Could not parse and adjust date for test: ${test.testName}. Returning original.`);
+            return test;
+        }
+    });
+
+    return { tests: adjustedTests };
   }
 );
