@@ -10,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { parse, subDays, format } from 'date-fns';
 
 const TestAnalyzerInputSchema = z.object({
   datesheetPhotoDataUris: z
@@ -104,6 +105,30 @@ const analyzeDatesheetFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    return output!;
+    if (!output || !output.tests) {
+        return { tests: [] };
+    }
+
+    // Adjust the dates to be 2 days earlier
+    const adjustedTests = output.tests.map(test => {
+        try {
+            const originalStartDate = parse(test.startDate, 'yyyy-MM-dd', new Date());
+            const originalEndDate = parse(test.endDate, 'yyyy-MM-dd', new Date());
+            
+            const adjustedStartDate = subDays(originalStartDate, 2);
+            const adjustedEndDate = subDays(originalEndDate, 2);
+
+            return {
+                ...test,
+                startDate: format(adjustedStartDate, 'yyyy-MM-dd'),
+                endDate: format(adjustedEndDate, 'yyyy-MM-dd'),
+            };
+        } catch (error) {
+            console.error(`Could not parse dates for test: ${test.testName}. Returning original dates.`);
+            return test;
+        }
+    });
+
+    return { tests: adjustedTests };
   }
 );
