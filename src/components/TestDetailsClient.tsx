@@ -75,7 +75,7 @@ export function TestDetailsClient({ testId }: { testId: string }) {
                 </CardHeader>
                 <CardContent>
                     <div className="grid grid-cols-2 gap-4">
-                       <DetailCard label="Test date" value={`${format(parseISO(test.startDate), "dd MMM''yy")} - ${format(parseISO(test.endDate), "dd MMM''yy")}`} />
+                       <DetailCard label="Test date" value={`${format(parseISO(test.startDate), "dd MMM''yy")}`} />
                        <DetailCard label="Test duration" value="-" />
                        <DetailCard label="Result date" value={format(parseISO(test.endDate), "dd MMM''yy")} />
                        <DetailCard label="No. of questions" value="-" />

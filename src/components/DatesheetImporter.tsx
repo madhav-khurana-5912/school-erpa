@@ -145,7 +145,7 @@ export function DatesheetImporter() {
                     <p className="font-medium">{test.testName}</p>
                     <p className="text-sm text-muted-foreground flex items-center gap-1.5">
                       <Calendar className="w-3 h-3" />
-                      {format(parseISO(test.startDate), "d MMM yyyy")} - {format(parseISO(test.endDate), "d MMM yyyy")}
+                      {format(parseISO(test.startDate), "d MMM yyyy")}
                     </p>
                   </div>
                 </li>

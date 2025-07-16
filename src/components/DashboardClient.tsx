@@ -59,7 +59,7 @@ const TestsSection = () => {
                                 <div className="flex items-center gap-2">
                                     <Calendar className="w-4 h-4" />
                                     <span>
-                                        {format(parseISO(upcomingTest.startDate), "dd MMM'yy")} - {format(parseISO(upcomingTest.endDate), "dd MMM'yy")}
+                                        {format(parseISO(upcomingTest.startDate), "dd MMM'yy")}
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-2">

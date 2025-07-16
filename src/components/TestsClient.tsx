@@ -54,7 +54,7 @@ const TestList = ({ tests }: { tests: Test[] }) => {
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
                   <span>
-                    {format(parseISO(test.startDate), "dd MMM yyyy")} - {format(parseISO(test.endDate), "dd MMM yyyy")}
+                    {format(parseISO(test.startDate), "dd MMM yyyy")}
                   </span>
                 </div>
               </div>
