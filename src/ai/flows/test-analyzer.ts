@@ -40,31 +40,26 @@ const prompt = ai.definePrompt({
   name: 'datesheetAnalyzerPrompt',
   input: {schema: TestAnalyzerInputSchema},
   output: {schema: TestAnalyzerOutputSchema},
-  prompt: `You are an expert AI assistant tasked with *accurately* extracting structured data from images of a test datesheet. Your primary goal is precision. Do not invent or hallucinate information. If the image is not a datesheet, return an empty list.
+  prompt: `You are an AI assistant specializing in accurately extracting structured data from test datesheets.
 
-**CRITICAL INSTRUCTIONS:**
+**Instructions:**
 
-1.  **Accurate Date Extraction:**
-    *   Today's date is **${new Date().toDateString()}**. Use this to correctly determine the year for the test dates. Datesheets often omit the year, so you must infer it logically.
-    *   Extract the start and end dates for each test and format them as **YYYY-MM-DD**.
-    *   If a test is on a single day, the \`startDate\` and \`endDate\` will be the same.
+1.  **Group Subjects into a Single Test Event:** Many datesheets list multiple subjects for the same test event (e.g., "Unit Test 1", "Term End Exam"). You MUST identify these as a single test.
+    *   **Correct Behavior:** If you see "Unit Test 1" with subjects "Physics", "Chemistry", and "Maths" on different dates, create ONE entry with \`testName: "Unit Test 1"\`.
+    *   **Incorrect Behavior:** Do NOT create separate entries for "Unit Test 1 - Physics", "Unit Test 1 - Chemistry", etc.
 
-2.  **Group Subjects by CONSECUTIVE Days ONLY:**
-    *   **This is the most important rule.** You can only group subjects under the same \`testName\` (e.g., "Unit Test 1") if their exam dates are consecutive (e.g., Monday and Tuesday).
-    *   A single test event's \`endDate\` can be at most **2 days** after its \`startDate\`.
-    *   **Correct Behavior:** If "Unit Test 1" has Physics on Monday and Chemistry on Tuesday, create ONE entry for "Unit Test 1" with \`startDate\` as Monday and \`endDate\` as Tuesday.
-    *   **Incorrect Behavior:** If "Unit Test 1" has Physics on Monday and Maths on Wednesday, you MUST create TWO SEPARATE entries: one for "Unit Test 1 - Physics" on Monday, and one for "Unit Test 1 - Maths" on Wednesday. Do not create a single test spanning from Monday to Wednesday. Append the subject to the test name to make them unique.
-
-3.  **Extract and Combine All Syllabus Topics:**
-    *   For a single test event (grouped by consecutive days), you MUST combine all associated subjects and their specific syllabus topics (if provided) into a single \`syllabus\` string.
-    *   **Look for a "Syllabus" column or section.** Many datesheets list specific chapters or topics.
-    *   **Example:** If a test on Monday and Tuesday has:
+2.  **Combine All Syllabus Topics:** For a single test event, you MUST combine all associated subjects/topics into a single \`syllabus\` string.
+    *   **Example:** If "Unit Test 1" has:
         *   Physics: Chapters 1-3
         *   Chemistry: Organic Compounds
-        The syllabus field for that single test entry should be "Physics: Chapters 1-3, Chemistry: Organic Compounds".
-    *   If no specific topics are listed, use the subject name as the syllabus. For example, if it just says "English", the syllabus contribution is just "English".
+    *   The syllabus field for the "Unit Test 1" entry should be "Physics: Chapters 1-3, Chemistry: Organic Compounds".
 
-**Analyze the following datesheet images and extract the data *only* based on the information visible in the image, following these rules strictly:**
+3.  **Determine Date Range:**
+    *   The \`startDate\` should be the earliest date among all subjects in the test event.
+    *   The \`endDate\` should be the latest date among all subjects in the test event.
+    *   Format all dates as **YYYY-MM-DD**. Infer the year from the current date: ${new Date().toDateString()}.
+
+**Analyze the following datesheet images and extract the data based on these rules.**
 
 Datesheet Images:
 {{#each datesheetPhotoDataUris}}
