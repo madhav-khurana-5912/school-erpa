@@ -40,26 +40,54 @@ const prompt = ai.definePrompt({
   name: 'datesheetAnalyzerPrompt',
   input: {schema: TestAnalyzerInputSchema},
   output: {schema: TestAnalyzerOutputSchema},
-  prompt: `You are an AI assistant specializing in accurately extracting structured data from test datesheets.
+  prompt: `You are an expert AI assistant designed to meticulously extract structured information from academic datesheets. Your primary goal is accuracy. If you are not certain about a piece of information, do not include it.
 
-**Instructions:**
+**Current Date:** ${new Date().toDateString()} (Use this to correctly infer the year for the test dates).
 
-1.  **Group Subjects into a Single Test Event:** Many datesheets list multiple subjects for the same test event (e.g., "Unit Test 1", "Term End Exam"). You MUST identify these as a single test.
-    *   **Correct Behavior:** If you see "Unit Test 1" with subjects "Physics", "Chemistry", and "Maths" on different dates, create ONE entry with \`testName: "Unit Test 1"\`.
-    *   **Incorrect Behavior:** Do NOT create separate entries for "Unit Test 1 - Physics", "Unit Test 1 - Chemistry", etc.
+**CRITICAL INSTRUCTIONS:**
 
-2.  **Combine All Syllabus Topics:** For a single test event, you MUST combine all associated subjects/topics into a single \`syllabus\` string.
-    *   **Example:** If "Unit Test 1" has:
-        *   Physics: Chapters 1-3
-        *   Chemistry: Organic Compounds
-    *   The syllabus field for the "Unit Test 1" entry should be "Physics: Chapters 1-3, Chemistry: Organic Compounds".
+1.  **Group Subjects into a Single Test Event:**
+    *   Many datesheets list multiple subjects for the same test event (e.g., "Unit Test 1", "Mid-Term Exam"). You MUST identify all subjects belonging to a single test and group them.
+    *   The \`startDate\` for the test event is the earliest date of any subject within that group.
+    *   The \`endDate\` for the test event is the latest date of any subject within that group.
+    *   Do NOT create separate test entries for "Unit Test 1 - Physics", "Unit Test 1 - Chemistry", etc. Create ONE entry named "Unit Test 1".
 
-3.  **Determine Date Range:**
-    *   The \`startDate\` should be the earliest date among all subjects in the test event.
-    *   The \`endDate\` should be the latest date among all subjects in the test event.
-    *   Format all dates as **YYYY-MM-DD**. Infer the year from the current date: ${new Date().toDateString()}.
+2.  **Combine Syllabus Information:**
+    *   For each test event, you MUST find the syllabus for every subject listed.
+    *   Combine all these details into a single, comprehensive \`syllabus\` string.
+    *   If a syllabus is not mentioned for a subject, just list the subject's name.
 
-**Analyze the following datesheet images and extract the data based on these rules.**
+3.  **Accuracy and Formatting:**
+    *   Format ALL dates as **YYYY-MM-DD**. Use the current year provided above as the default.
+    *   Do NOT invent information. If a detail (like a syllabus) is not present, omit it from the output string.
+    *   If the provided image is not a datesheet or is unreadable, return an empty list of tests.
+
+**EXAMPLE:**
+
+**If the datesheet image shows:**
+| Date        | Subject     | Syllabus                   |
+|-------------|-------------|----------------------------|
+| 15 Jul      | Physics     | Chapters 1-3, Kinematics   |
+| 16 Jul      | Chemistry   | Ch. 2, Organic Compounds   |
+| 18 Jul      | Maths       | Algebra (Ch. 4 & 5)        |
+
+And the header says **"Unit Test 1 Schedule"**.
+
+**Your JSON output MUST be:**
+\`\`\`json
+{
+  "tests": [
+    {
+      "testName": "Unit Test 1",
+      "startDate": "2024-07-15",
+      "endDate": "2024-07-18",
+      "syllabus": "Physics: Chapters 1-3, Kinematics. Chemistry: Ch. 2, Organic Compounds. Maths: Algebra (Ch. 4 & 5)."
+    }
+  ]
+}
+\`\`\`
+
+**Now, analyze the following datesheet images based on these exact rules.**
 
 Datesheet Images:
 {{#each datesheetPhotoDataUris}}
