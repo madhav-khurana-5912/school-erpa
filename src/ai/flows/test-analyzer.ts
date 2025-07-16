@@ -47,22 +47,21 @@ const prompt = ai.definePrompt({
 1.  **Accurate Date Extraction:**
     *   Today's date is **${new Date().toDateString()}**. Use this to correctly determine the year for the test dates. Datesheets often omit the year, so you must infer it logically.
     *   Extract the start and end dates for each test and format them as **YYYY-MM-DD**.
-    *   For a single test event (e.g., "Unit Test 1"), the \`startDate\` is the date of the *first* subject's exam, and the \`endDate\` is the date of the *last* subject's exam.
     *   If a test is on a single day, the \`startDate\` and \`endDate\` will be the same.
 
-2.  **Group Subjects into a Single Test Event:**
-    *   Many datesheets list multiple subjects for the same overall test (e.g., "Unit Test 1", "Final Exam"). You MUST identify these as a single test.
-    *   **Correct Behavior:** If you see "Unit Test 1" with subjects "Physics", "Chemistry", and "Maths" listed, create ONE entry with \`testName: "Unit Test 1"\`.
-    *   **Incorrect Behavior:** Do NOT create separate entries like "Unit Test 1 - Physics".
+2.  **Group Subjects by CONSECUTIVE Days ONLY:**
+    *   **This is the most important rule.** You can only group subjects under the same \`testName\` (e.g., "Unit Test 1") if their exam dates are consecutive (e.g., Monday and Tuesday).
+    *   A single test event's \`endDate\` can be at most **2 days** after its \`startDate\`.
+    *   **Correct Behavior:** If "Unit Test 1" has Physics on Monday and Chemistry on Tuesday, create ONE entry for "Unit Test 1" with \`startDate\` as Monday and \`endDate\` as Tuesday.
+    *   **Incorrect Behavior:** If "Unit Test 1" has Physics on Monday and Maths on Wednesday, you MUST create TWO SEPARATE entries: one for "Unit Test 1 - Physics" on Monday, and one for "Unit Test 1 - Maths" on Wednesday. Do not create a single test spanning from Monday to Wednesday. Append the subject to the test name to make them unique.
 
 3.  **Extract and Combine All Syllabus Topics:**
-    *   For a single test event, you MUST combine all associated subjects and their specific syllabus topics (if provided) into a single \`syllabus\` string.
+    *   For a single test event (grouped by consecutive days), you MUST combine all associated subjects and their specific syllabus topics (if provided) into a single \`syllabus\` string.
     *   **Look for a "Syllabus" column or section.** Many datesheets list specific chapters or topics.
-    *   **Example:** If the datesheet shows:
+    *   **Example:** If a test on Monday and Tuesday has:
         *   Physics: Chapters 1-3
         *   Chemistry: Organic Compounds
-        *   MAT: Number Series
-        The syllabus field for that single test entry should be "Physics: Chapters 1-3, Chemistry: Organic Compounds, MAT: Number Series".
+        The syllabus field for that single test entry should be "Physics: Chapters 1-3, Chemistry: Organic Compounds".
     *   If no specific topics are listed, use the subject name as the syllabus. For example, if it just says "English", the syllabus contribution is just "English".
 
 **Analyze the following datesheet images and extract the data *only* based on the information visible in the image, following these rules strictly:**
