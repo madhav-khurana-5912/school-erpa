@@ -1,0 +1,41 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to get the psid from the user's email
+    function getPsidFromEmail(email) {
+      return email.split('@')[0];
+    }
+    
+    // Secure the 'tasks' collection
+    match /tasks/{taskId} {
+      // Allow read/write only if the user is authenticated and the document's psid matches their own
+      allow read, write: if request.auth != null && request.auth.token.email != null &&
+                            resource.data.psid == getPsidFromEmail(request.auth.token.email);
+      // Allow create only if the user is authenticated and the new document's psid matches their own
+      allow create: if request.auth != null && request.auth.token.email != null &&
+                      request.resource.data.psid == getPsidFromEmail(request.auth.token.email);
+    }
+    
+    // Secure the 'tests' collection
+    match /tests/{testId} {
+      // Allow read/write only if the user is authenticated and the document's psid matches their own
+      allow read, write, delete: if request.auth != null && request.auth.token.email != null &&
+                           resource.data.psid == getPsidFromEmail(request.auth.token.email);
+      // Allow create only if the user is authenticated and the new document's psid matches their own
+      allow create: if request.auth != null && request.auth.token.email != null &&
+                      request.resource.data.psid == getPsidFromEmail(request.auth.token.email);
+    }
+    
+    // Secure the 'syllabuses' collection
+    match /syllabuses/{syllabusId} {
+       // Allow read/write only if the user is authenticated and the document's psid matches their own
+      allow read, write: if request.auth != null && request.auth.token.email != null &&
+                            resource.data.psid == getPsidFromEmail(request.auth.token.email);
+      // Allow create only if the user is authenticated and the new document's psid matches their own
+      allow create: if request.auth != null && request.auth.token.email != null &&
+                      request.resource.data.psid == getPsidFromEmail(request.auth.token.email);
+    }
+  }
+}
